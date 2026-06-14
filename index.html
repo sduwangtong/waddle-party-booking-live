@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Waddle Waddle NY — Book a Birthday Party</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --p1:#F39C2D; --p1d:#E2860F;
+    --p2:#E8527A; --p2d:#D43A64;
+    --p3:#23ABB8; --p3d:#1690A0;
+    --p4:#8E5BD9; --p4d:#7644C4;
+    --ink:#3A3550; --muted:#6E6886; --line:#ECE7F5;
+    --bg:#F1E9F6; --card:#FFFFFF; --accent:#8B7DE8; --sage:#BED0B7;
+    --ok:#27AE60; --shadow:0 10px 30px rgba(120,80,200,.12);
+    --radius:20px;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:2px; border-radius:6px; }
+  @keyframes stepIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .panel.anim { animation:stepIn .28s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .panel.anim { animation:none; }
+    .pkg, .chip, .slot, .theme, .cta { transition:none; }
+    html { scroll-behavior:auto; }
+  }
+  body {
+    font-family:"Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    min-height:100vh;
+  }
+
+  /* Header */
+  header.top {
+    text-align:center; padding:24px 16px 30px; background:var(--sage);
+  }
+  .logo-card { display:inline-block; }
+  .logo-card img { display:block; height:96px; width:auto; }
+  .tag { color:#494661; font-weight:600; margin-top:12px; font-size:15px; }
+  .wave { line-height:0; margin-top:-1px; }
+  .wave svg { display:block; width:100%; height:42px; }
+  .wave path { fill:var(--sage); }
+  @media (max-width:560px){ .logo-card img { height:66px; } }
+
+  /* Stepper */
+  .steps-bar {
+    max-width:1080px; margin:18px auto 6px; padding:0 16px;
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  }
+  .step-pill {
+    display:flex; align-items:center; gap:8px; cursor:default;
+    background:#fff; border:2px solid var(--line); color:var(--muted);
+    padding:8px 14px; border-radius:999px; font-weight:600; font-size:14px;
+    box-shadow:0 2px 8px rgba(120,80,200,.05);
+  }
+  .step-pill .num {
+    width:22px; height:22px; border-radius:50%; background:var(--line);
+    color:#fff; display:grid; place-items:center; font-size:13px; flex:none;
+  }
+  .step-pill.active { border-color:var(--accent); color:var(--accent); }
+  .step-pill.active .num { background:var(--accent); }
+  .step-pill.done { border-color:var(--ok); color:var(--ok); cursor:pointer; }
+  .step-pill.done .num { background:var(--ok); }
+
+  /* Layout */
+  .app-grid {
+    max-width:1080px; margin:14px auto 60px; padding:0 16px;
+    display:grid; grid-template-columns:1fr 340px; gap:22px; align-items:start;
+  }
+  .panel {
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:26px 26px 30px; min-height:380px; min-width:0; /* let 1fr track shrink so chips scroll, not blow out the grid */
+  }
+  .panel h2 { margin:0 0 4px; font-size:24px; }
+  .panel .sub { color:var(--muted); margin:0 0 22px; font-size:14px; }
+
+  /* Summary */
+  .summary {
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:22px; position:sticky; top:16px;
+  }
+  .summary-compact { display:none; }
+  .summary h3 { margin:0 0 14px; font-size:20px; }
+  .venue { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:14px; }
+  .venue b { color:var(--accent); display:block; font-size:14px; }
+  .sum-row { display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:7px 0; }
+  .sum-row .k { color:var(--muted); }
+  .sum-row .v { font-weight:600; text-align:right; }
+  .sum-empty { color:#BDB7CF; font-style:italic; }
+  .divider { height:1px; background:var(--line); margin:12px 0; }
+  .grand { font-size:15px; }
+  .grand .v { font-size:18px; color:var(--accent); }
+  .deposit-line .v { color:var(--p2); }
+  .cta {
+    width:100%; margin-top:16px; border:0; cursor:pointer;
+    background:linear-gradient(90deg,var(--accent),#A99BF2);
+    color:#fff; font-family:inherit; font-weight:600; font-size:16px;
+    padding:15px; border-radius:14px; box-shadow:0 8px 20px rgba(123,79,224,.35);
+    transition:transform .08s ease, filter .15s ease;
+  }
+  .cta:hover { filter:brightness(1.05); }
+  .cta:active { transform:translateY(1px); }
+  .cta:disabled { background:#D9D2EC; box-shadow:none; cursor:not-allowed; color:#fff; }
+  .back-link { display:block; text-align:center; margin-top:12px; color:var(--muted); font-size:13px; cursor:pointer; background:none; border:0; width:100%; font-family:inherit; }
+  .back-link:hover { color:var(--accent); }
+
+  /* Date chips */
+  .field-label { font-weight:600; font-size:15px; margin:22px 0 10px; }
+  .field-label:first-child { margin-top:0; }
+  input[type="date"] {
+    font-family:inherit; font-size:15px; padding:11px 14px; border:2px solid var(--line);
+    border-radius:12px; color:var(--ink); width:100%; max-width:240px; background:#fff;
+  }
+  .tin {
+    font-family:inherit; font-size:15px; padding:12px 14px; border:2px solid var(--line);
+    border-radius:12px; width:100%; margin-top:10px; color:var(--ink); background:#fff;
+  }
+  .tin:focus-visible { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(139,125,232,.25); }
+  .chips { display:flex; gap:10px; overflow-x:auto; padding:4px 2px 8px; }
+  .chip {
+    flex:none; border:2px solid var(--line); background:#fff; border-radius:14px;
+    padding:10px 14px; cursor:pointer; text-align:center; min-width:74px; font-family:inherit;
+    transition:all .12s ease; color:var(--ink);
+  }
+  .chip .dow { font-size:12px; color:var(--muted); display:block; }
+  .chip .dm { font-size:15px; font-weight:600; }
+  .chip:hover { border-color:#C9BEF0; }
+  .chip.sel { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .chip.sel .dow { color:#C9C3DC; }
+
+  .slots { display:flex; gap:10px; flex-wrap:wrap; }
+  .slot {
+    border:2px solid var(--line); background:#fff; border-radius:12px; padding:11px 16px;
+    cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; color:var(--ink);
+    transition:all .12s ease;
+  }
+  .slot:hover { border-color:#C9BEF0; }
+  .slot.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .slot.full { background:#f4f4f7; border-color:var(--line); color:#b4b4c0; cursor:not-allowed; }
+  .slot.full:hover { border-color:var(--line); }
+  .slot .full-tag { display:block; font-size:11px; font-weight:600; color:#b4b4c0; margin-top:2px; }
+  .hint { color:var(--muted); font-size:14px; font-style:italic; }
+
+  /* Kids stepper */
+  .stepper { display:inline-flex; align-items:center; gap:0; border:2px solid var(--line); border-radius:14px; overflow:hidden; }
+  .stepper button {
+    width:48px; height:48px; border:0; background:#F6F1FF; color:var(--accent);
+    font-size:24px; font-family:inherit; cursor:pointer; line-height:1;
+  }
+  .stepper button:disabled { color:#D2C9EA; cursor:not-allowed; }
+  .stepper .count { width:70px; text-align:center; font-size:22px; font-weight:600; }
+  .kid-note { color:var(--muted); font-size:13px; margin-top:8px; }
+
+  /* Add-on extras (step 3) */
+  .opt-cat-title { font-weight:600; font-size:14px; color:var(--accent); margin:18px 0 8px; }
+  .opt-list { display:flex; flex-direction:column; gap:8px; }
+  .opt-row { display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:2px solid var(--line); border-radius:12px; padding:9px 12px; background:#fff; transition:border-color .12s ease, background .12s ease; }
+  .opt-row.on { border-color:var(--accent); background:#FAF8FF; }
+  .opt-info { display:flex; flex-direction:column; min-width:0; }
+  .opt-name { font-size:14px; font-weight:500; color:var(--ink); }
+  .opt-price { font-size:12px; color:var(--muted); }
+  .opt-stepper { display:inline-flex; align-items:center; border:2px solid var(--line); border-radius:10px; overflow:hidden; flex:none; }
+  .opt-stepper button { width:34px; height:34px; border:0; background:#F6F1FF; color:var(--accent); font-size:18px; font-family:inherit; cursor:pointer; line-height:1; }
+  .opt-stepper button:disabled { color:#D2C9EA; cursor:not-allowed; }
+  .opt-q { width:32px; text-align:center; font-size:15px; font-weight:600; }
+
+  /* Package cards */
+  .pkgs { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .pkg {
+    border:2px solid var(--line); border-radius:18px; overflow:hidden; cursor:pointer;
+    background:#fff; display:flex; flex-direction:column; transition:transform .1s ease, box-shadow .15s ease, border-color .15s ease;
+    position:relative;
+  }
+  .pkg:hover { transform:translateY(-3px); box-shadow:0 14px 28px rgba(120,80,200,.16); }
+  .pkg.sel { border-color:var(--pc); box-shadow:0 0 0 3px var(--pc) inset, 0 14px 28px rgba(120,80,200,.18); }
+  .pkg .phead { background:var(--pc); color:#fff; padding:12px 16px 14px; text-align:center; }
+  .pkg .pname { font-weight:700; font-size:13px; letter-spacing:1px; opacity:.95; }
+  .pkg .ptitle { font-weight:700; font-size:19px; margin-top:2px; }
+  .pkg .badge {
+    position:absolute; top:10px; right:10px; background:#FFD23F; color:#7a5a00;
+    font-size:10px; font-weight:700; padding:4px 9px; border-radius:999px; letter-spacing:.5px;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+  }
+  .pkg .pbody { padding:14px 16px 16px; display:flex; flex-direction:column; flex:1; }
+  .pkg .price { font-size:30px; font-weight:700; color:var(--pc); line-height:1; }
+  .pkg .price small { font-size:14px; color:var(--muted); font-weight:500; }
+  .pkg .orig { font-size:12px; color:var(--muted); text-decoration:line-through; margin-top:3px; }
+  .pkg .breakdown { font-size:12px; color:var(--muted); margin-top:4px; min-height:16px; }
+  .pkg ul { list-style:none; margin:12px 0 0; padding:0; flex:1; }
+  .pkg li { font-size:12.5px; padding:3px 0 3px 22px; position:relative; color:#5a5470; line-height:1.35; }
+  .pkg li::before { content:"✓"; position:absolute; left:0; color:var(--pc); font-weight:700; }
+  .pkg .choose { margin-top:14px; text-align:center; font-weight:600; font-size:14px; color:var(--pc); border:2px solid var(--pc); border-radius:10px; padding:8px; }
+  .pkg.sel .choose { background:var(--pc); color:#fff; }
+
+  /* Themes */
+  .theme-note { background:#FFF7E6; border:1px dashed #F0C764; color:#8a6d1f; font-size:13px; padding:10px 14px; border-radius:12px; margin-bottom:18px; }
+  .themes { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .theme {
+    border:2px solid var(--line); border-radius:14px; padding:16px 8px; text-align:center;
+    cursor:pointer; background:#fff; font-family:inherit; transition:all .12s ease;
+  }
+  .theme:hover { border-color:#C9BEF0; }
+  .theme.sel { border-color:var(--accent); background:#F6F1FF; }
+  .theme .emoji { font-size:30px; display:block; }
+  .theme .tname { font-size:13px; font-weight:600; margin-top:6px; color:var(--ink); }
+  .theme .tick { color:var(--accent); font-size:13px; height:16px; }
+
+  /* Party package notes (food tiers) */
+  .pkg-notes { background:#FFF7E6; border:1px solid #F0C764; border-radius:14px; padding:14px 16px; margin-top:20px; }
+  .pkg-notes .pn-title { font-weight:700; color:#8a6d1f; margin-bottom:8px; }
+  .pkg-notes .pn-row { font-size:13px; color:#7a611c; line-height:1.75; }
+  .pkg-notes .pn-row b { color:#6b540f; }
+  .pkg-notes .pn-row span { color:#a3905c; }
+
+  /* Step 4 — birthday fields, discount, policy */
+  textarea.tin { resize:vertical; }
+  select.tin { appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:34px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236E6886' d='M0 0H12L6 7Z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; }
+  .duo { display:flex; gap:10px; }
+  .duo .tin { flex:1; min-width:0; }
+  .disc-row { display:flex; gap:8px; align-items:stretch; }
+  .disc-row .tin { flex:1; }
+  .disc-apply { flex:none; border:0; cursor:pointer; background:var(--accent); color:#fff;
+    font-family:inherit; font-weight:600; font-size:14px; padding:0 18px; border-radius:12px; }
+  .disc-apply:hover { filter:brightness(1.05); }
+  .disc-msg { font-size:13px; margin-top:8px; font-weight:600; }
+  .disc-msg.ok { color:var(--ok); }
+  .disc-msg.err { color:var(--p2d); }
+  .policy-note { background:#FDEEF2; border:1px solid #F4C4D2; color:#9a3b58;
+    font-size:12.5px; padding:10px 14px; border-radius:12px; margin-top:14px; line-height:1.5; }
+
+  /* Review */
+  .review-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin-bottom:8px; }
+  .rev { padding:10px 0; border-bottom:1px solid var(--line); }
+  .rev .k { font-size:12px; color:var(--muted); }
+  .rev .v { font-size:16px; font-weight:600; }
+  .price-box { background:#F8F4FF; border-radius:14px; padding:16px 18px; margin-top:18px; }
+  .price-box .sum-row { padding:6px 0; }
+
+  /* Confirmation */
+  .confirm-hero { text-align:center; padding:10px 0 6px; }
+  .confirm-hero .big { font-size:54px; }
+  .confirm-hero h2 { margin:8px 0 2px; }
+  .email-card { background:#F8F4FF; border:1px solid var(--line); border-radius:14px; margin-top:20px; overflow:hidden; }
+  .email-card .ehead { background:#EFE8FF; padding:10px 16px; font-size:13px; color:var(--accent); font-weight:600; }
+  .email-card pre {
+    margin:0; padding:16px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px;
+    color:#4a4560; white-space:pre-wrap; line-height:1.6;
+  }
+  .small-note { color:var(--muted); font-size:12px; margin-top:14px; text-align:center; }
+
+  /* Footer */
+  .site-foot {
+    max-width:1080px; margin:6px auto 54px; padding:24px 26px;
+    display:flex; gap:56px; flex-wrap:wrap; justify-content:center;
+    color:var(--muted); font-size:14px; text-align:center;
+  }
+  .site-foot h4 { margin:0 0 6px; color:var(--ink); font-size:15px; }
+  .site-foot p { margin:0; line-height:1.7; }
+  .site-foot a { color:var(--accent); text-decoration:none; font-weight:600; }
+  .site-foot a:hover { text-decoration:underline; }
+
+  @media (max-width:880px) {
+    .app-grid { grid-template-columns:1fr; }
+    .summary { position:static; }
+    .summary-detail { display:none; }                 /* full order summary is desktop-only */
+    .summary-compact { display:block; margin-bottom:4px; }
+    .pkgs { grid-template-columns:1fr; }
+    .themes { grid-template-columns:repeat(2,1fr); }
+    .review-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="logo-card"><img src="assets/logo.png" alt="Waddle Waddle — Playground & Party Room" /></div>
+    <div class="tag">🎈 Book your private birthday party room 🎈</div>
+  </header>
+  <div class="wave"><svg viewBox="0 0 1440 42" preserveAspectRatio="none"><path d="M0,0 H1440 V16 C1120,44 980,2 720,20 C470,40 320,2 0,26 Z"></path></svg></div>
+
+  <nav class="steps-bar" id="stepsBar"></nav>
+
+  <main class="app-grid">
+    <section class="panel" id="panel"></section>
+    <aside class="summary" id="summary"></aside>
+  </main>
+
+  <footer class="site-foot">
+    <div class="foot-col"><h4>📍 Visit us</h4><p>120 Voice Rd.<br>Carle Place, NY 11514</p></div>
+    <div class="foot-col"><h4>📞 Contact</h4>
+      <p><a href="mailto:info@waddlewaddleny.com">info@waddlewaddleny.com</a><br>
+      <a href="tel:+15162439397">(516) 243-9397</a></p></div>
+  </footer>
+
+<script>
+/* ---------------- Data ---------------- */
+const PACKAGES = [
+  {
+    id:1, name:"PACKAGE 1", title:"⭐ Classic ⭐", base:599, orig:null, perKid:35,
+    cssvar:"var(--p1)", badge:null,
+    features:[
+      "10 kids","10 Adults","2Hr Private Party Room & Playground Access",
+      "2 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid",
+      "Age Number Balloon","Classic Tableware","Setup & Cleanup","Backdrop (Happy Birthday)"
+    ]
+  },
+  {
+    id:2, name:"PACKAGE 2", title:"💖 Premium 💖", base:899, orig:null, perKid:35,
+    cssvar:"var(--p2)", badge:null,
+    features:[
+      "10 kids","10 Adults","2Hr Private Party Room & Playground Access",
+      "2 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid",
+      "Age Number Balloon","Classic Tableware","Setup & Cleanup",
+      "Fruit Pouch for Each Kid","2L Lemonade","Bottle Water","Balloon Garland (6ft)",
+      "Backdrop (Happy Birthday)","Party Welcome Sign"
+    ]
+  },
+  {
+    id:3, name:"PACKAGE 3", title:"🌟 Luxury 🌟", base:1399, orig:1793, perKid:35,
+    cssvar:"var(--p3)", badge:"BEST VALUE",
+    features:[
+      "10 kids","10 Adults","2Hr Private Party Room & Unlimited Playground Access",
+      "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","2L Lemonade","Bottle Water",
+      "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
+      "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid"
+    ]
+  },
+  {
+    id:4, name:"PACKAGE 4", title:"👑 VIP 👑", base:1799, orig:1999, perKid:35,
+    cssvar:"var(--p4)", badge:"VIP EXPERIENCE",
+    features:[
+      "10 kids","10 Adults","2Hr Private Party Room & Unlimited Playground Access",
+      "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","2L Lemonade","Bottle Water",
+      "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
+      "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid",
+      "Balloon Cake","Balloon Flower","Balloon Fireworks",
+      "Special Gift for Birthday Kid","Photography Assistance"
+    ]
+  }
+];
+
+const WEEKEND_SLOTS = ["10:00 AM – 12:00 PM","12:30 – 2:30 PM","3:00 – 5:00 PM","5:30 – 7:30 PM"];
+const WEEKDAY_SLOTS = ["5:30 – 7:30 PM"];
+
+// Party themes — emoji + text (no images needed).
+const THEMES = [
+  {e:"⛏️",n:"Minecraft"},{e:"🎤",n:"KPop Demon Hunters"},{e:"❄️",n:"Elsa (Frozen)"},{e:"🕷️",n:"Spider-Man"},
+  {e:"🦄",n:"Unicorn Dreams"},{e:"🍄",n:"Mario"},{e:"🐾",n:"Paw Patrol"},{e:"🐷",n:"Peppa Pig"},
+  {e:"🏎️",n:"Cars"},{e:"🐶",n:"Bluey"},{e:"🦕",n:"Dino Discovery"},{e:"🌊",n:"Under the Sea"}
+];
+
+// Add-on extras (from the EXTRA OPTIONS menu) — chosen by quantity on step 3.
+const OPTIONS = [
+  { cat:"🎁 Gift Options", items:[
+    { id:"balloon_dog", n:"Balloon Dog", p:3 },
+    { id:"goodie_bags", n:"Goodie Bags", p:8 },
+    { id:"special_gift", n:"Special Gift for Birthday Kid", p:100 },
+  ]},
+  { cat:"🍕 Food & Drink Extras", items:[
+    { id:"juice_box", n:"Juice Box", p:3 },
+    { id:"milk_box", n:"Milk Box", p:3 },
+    { id:"fruit_pouch", n:"Fruit Pouch", p:3 },
+    { id:"yogurt_pouch", n:"Yogurt Pouch", p:3 },
+    { id:"pizza_cheese", n:'Pizza (Cheese 18")', p:30 },
+    { id:"veg_salad", n:"Vegetable Salad", p:30 },
+    { id:"fruit_salad", n:"Fruit Salad", p:30 },
+    { id:"coke_2l", n:"2L Coke", p:10 },
+    { id:"lemonade_2l", n:"2L Lemonade", p:10 },
+    { id:"themed_cake", n:"Themed Birthday Cake", p:200 },
+    { id:"sparkling_water", n:"Sparkling Water", p:3 },
+    { id:"bottled_water", n:"Bottled Water", p:3 },
+  ]},
+  { cat:"🎟️ Other Options", items:[
+    { id:"extra_adult", n:"One Additional Adult", p:10 },
+    { id:"grip_sock", n:"Waddle Grip Sock", p:3 },
+    { id:"outside_food_fee", n:"Outside Food Cleaning Fee", p:100 },
+  ]},
+];
+const OPTION_BY_ID = Object.fromEntries(OPTIONS.flatMap(c=>c.items).map(i=>[i.id, i]));
+
+const DEPOSIT = 500;
+const TAX_RATE = 0.08625; // 8.625% sales tax (applied to party total, not the deposit)
+const LEAD_DAYS = 14; // parties must be booked at least 14 days out (12-day prep + buffer)
+const DISCOUNT_CODES = { DAYCARE122:0.10, IMMEMBER:0.10, WEEKDAY1:0.10 }; // 10% off the pre-tax subtotal
+
+// Backend (Stripe deposit checkout + availability). Paste the ApiBaseUrl from
+// `sam deploy` here — see backend/README.md.
+const API_BASE = "https://ew68um0lpa.execute-api.us-east-1.amazonaws.com/prod";
+const SAVE_KEY = "waddle_booking_pending"; // sessionStorage snapshot across the Stripe redirect
+const SLOT_CAPACITY = 3; // max active bookings per date+time slot (mirror of CAPACITY in capacity.mjs)
+let submitting = false; // guards against double-submit
+let availability = {};  // dateISO -> { [slot]: bookedCount } cache from /availability
+
+/* ---------------- State ---------------- */
+const state = { step:1, dateISO:null, time:null, kids:10, pkgId:null, theme:null, options:{},
+  childName:"", childAge:"", childGender:"", allergies:"", notes:"", discountCode:null, discountError:"",
+  name:"", phone:"", email:"", bookingId:null, payCancelled:false, slotFull:false };
+const STEPS = ["Date & Time","Package","Theme & Extras","Deposit"];
+let prevStep = 1;        // tracks step changes for scroll behavior
+let scrollNext = null;   // selector to reveal after a within-step selection
+
+/* ---------------- Helpers ---------------- */
+const $ = sel => document.querySelector(sel);
+const fmt = n => "$" + Number(n).toLocaleString("en-US");
+const money = n => "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const pkgById = id => PACKAGES.find(p => p.id === id);
+function optionsTotal(){
+  return Object.entries(state.options).reduce((s,[id,q])=> s + (OPTION_BY_ID[id]?.p||0)*Number(q||0), 0);
+}
+function selectedOptions(){
+  return OPTIONS.flatMap(c=>c.items).filter(i=>(state.options[i.id]||0)>0)
+    .map(i=>({ ...i, q: state.options[i.id] }));
+}
+// Single source of truth for all party totals (package + extra kids + extras − discount).
+function partyTotals(){
+  const pkg = pkgById(state.pkgId);
+  if (!pkg) return null;
+  const extra = Math.max(0, state.kids - 10);
+  const adults = 10 + extra;            // each extra kid includes 1 accompanying adult
+  const kidsExtra = extra * pkg.perKid;
+  const optionsSum = optionsTotal();
+  const gross = pkg.base + kidsExtra + optionsSum;               // pre-discount, pre-tax
+  const discountRate = state.discountCode ? (DISCOUNT_CODES[state.discountCode] || 0) : 0;
+  const discount = gross * discountRate;
+  const subtotal = gross - discount;                             // 10% off applies before tax
+  const tax = subtotal * TAX_RATE;
+  const saleTotal = subtotal + tax;
+  const balance = saleTotal - DEPOSIT;
+  return { pkg, extra, adults, kidsExtra, optionsSum, gross, discountRate, discount, subtotal, tax, saleTotal, balance };
+}
+function contactValid(){
+  return state.name.trim().length > 1
+    && state.phone.replace(/\D/g,"").length >= 7
+    && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email.trim());
+}
+// Birthday-child details are required to reserve (name + a valid age 1–17).
+function childValid(){
+  const age = Number(state.childAge);
+  return state.childName.trim().length > 0 && Number.isInteger(age) && age >= 1 && age <= 17;
+}
+function reserveValid(){ return contactValid() && childValid(); }
+function isWeekend(iso){ const d = new Date(iso + "T12:00:00"); const g = d.getDay(); return g === 0 || g === 6; }
+function slotsFor(iso){ return isWeekend(iso) ? WEEKEND_SLOTS : WEEKDAY_SLOTS; }
+function prettyDate(iso){
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+}
+function toISO(d){ return d.toISOString().slice(0,10); }
+// Earliest bookable party date — today + LEAD_DAYS (12-day prep + buffer).
+function leadStartDate(){ const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+LEAD_DAYS); return d; }
+
+/* ---------------- Render: stepper ---------------- */
+function renderSteps(){
+  const bar = $("#stepsBar");
+  bar.innerHTML = STEPS.map((label,i)=>{
+    const n = i+1;
+    const cls = state.step===n ? "active" : (state.step>n ? "done" : "");
+    return `<div class="step-pill ${cls}" data-go="${n}">
+      <span class="num">${state.step>n ? "✓" : n}</span> ${label}</div>`;
+  }).join("");
+  bar.querySelectorAll(".step-pill.done").forEach(el=>{
+    el.onclick = ()=>{ state.step = +el.dataset.go; render(); };
+  });
+}
+
+/* ---------------- Render: panel per step ---------------- */
+function renderPanel(){
+  const p = $("#panel");
+  if (state.step === 1) p.innerHTML = step1();
+  else if (state.step === 2) p.innerHTML = step2();
+  else if (state.step === 3) p.innerHTML = step3();
+  else if (state.step === 4) p.innerHTML = step4();
+  else p.innerHTML = step5();
+  p.classList.remove("anim"); void p.offsetWidth; p.classList.add("anim"); // retrigger step entrance
+  wirePanel();
+}
+
+// Remaining capacity for a slot on the selected date. Unknown (not yet fetched)
+// counts as fully open — slots only disable once /availability says they're full.
+function slotRemaining(s){
+  const booked = (availability[state.dateISO] || {})[s] || 0;
+  return SLOT_CAPACITY - booked;
+}
+
+// Fetch booked counts for a date and refresh the slot UI if it's still showing.
+// On any error we leave every slot enabled (graceful degradation) — the server
+// re-checks capacity at checkout, so a stale UI can't actually oversell.
+async function fetchAvailability(iso){
+  if (!iso) return;
+  try {
+    const res = await fetch(`${API_BASE}/availability?date=${iso}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    availability[iso] = data.booked || {};
+  } catch { return; }
+  if (state.dateISO === iso && state.step === 1){
+    const wrap = $("#slotsWrap");
+    if (wrap){ wrap.innerHTML = slotsMarkup(); wireSlots(); renderSummary(); }
+  }
+}
+
+// Just the time-slot markup — refreshed on date change without rebuilding the
+// date <input> (which would close the native picker mid-interaction).
+function slotsMarkup(){
+  if (!state.dateISO) return `<p class="hint">Pick a date to see available time slots.</p>`;
+  const slots = slotsFor(state.dateISO);
+  const kind = isWeekend(state.dateISO) ? "Weekend" : "Weekday";
+  // Drop a selection that just filled up (availability can arrive after the pick).
+  if (state.time && slotRemaining(state.time) <= 0) state.time = null;
+  const open = slots.filter(s=>slotRemaining(s) > 0).length;
+  return `<p class="hint" style="margin-top:0">${kind} — ${open} slot${open===1?"":"s"} available</p>
+    <div class="slots">` +
+    slots.map(s=>{
+      const full = slotRemaining(s) <= 0;
+      const cls = full ? "slot full" : `slot ${state.time===s?"sel":""}`;
+      return `<button class="${cls}" data-slot="${s}" ${full?"disabled":""}>${s}${full?`<span class="full-tag">Fully booked</span>`:""}</button>`;
+    }).join("") +
+    `</div>`;
+}
+function wireSlots(){
+  document.querySelectorAll(".slot:not(.full)").forEach(b=>{
+    b.onclick = ()=>{ state.time = b.dataset.slot; scrollNext = "#kidsField"; render(); };
+  });
+}
+
+function step1(){
+  // Bookings open LEAD_DAYS out — build one week of day chips from the earliest date.
+  const start = leadStartDate();
+  let chips = "";
+  for (let i=0;i<7;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const iso = toISO(d);
+    const dow = d.toLocaleDateString("en-US",{weekday:"short"});
+    const dm = d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+    chips += `<button class="chip ${state.dateISO===iso?"sel":""}" data-iso="${iso}">
+      <span class="dow">${dow}</span><span class="dm">${dm}</span></button>`;
+  }
+  const minISO = toISO(start);
+  // One-shot notices: a slot 409'd during payment, or a cold cancel returned from Stripe.
+  const slotFull = state.slotFull; state.slotFull = false;
+  const payCancelled = state.payCancelled; state.payCancelled = false;
+  const notice = slotFull ? "That time slot just filled up — please pick another date or time."
+    : payCancelled ? "Payment cancelled — your card wasn't charged. Start a new booking below."
+    : null;
+
+  return `
+    <h2>Select a date & time</h2>
+    <p class="sub">Choose when you'd like to celebrate, then how many kids are coming.</p>
+    ${notice?`<div class="policy-note" style="background:#FDEEF2;border-color:#F4C4D2;color:#9a3b58">${notice}</div>`:""}
+
+    <div class="field-label">📅 Date</div>
+    <input type="date" id="dateInput" min="${minISO}" value="${state.dateISO||""}" />
+    <div class="chips" style="margin-top:12px">${chips}</div>
+    <div class="kid-note">⏳ We need at least ${LEAD_DAYS} days to prepare — the earliest available date is <b>${prettyDate(minISO)}</b>.</div>
+
+    <div class="field-label" id="sessionTimes">⏰ Session time <span style="font-weight:400;color:var(--muted);font-size:13px">(2-hour private room)</span></div>
+    <div id="slotsWrap">${slotsMarkup()}</div>
+
+    <div class="field-label" id="kidsField">🧒 Number of kids</div>
+    <div class="stepper">
+      <button id="kMinus" ${state.kids<=10?"disabled":""}>−</button>
+      <span class="count" id="kCount">${state.kids}</span>
+      <button id="kPlus" ${state.kids>=30?"disabled":""}>+</button>
+    </div>
+    <div class="kid-note">10 kids + 10 adults included in every package · max 30 kids.
+      ${state.kids>10 ? `<br><b>${state.kids-10} extra kid${state.kids-10>1?"s":""}</b> — +$35 each (includes 1 adult per child).` : ""}</div>
+  `;
+}
+
+function step2(){
+  const cards = PACKAGES.map(pkg=>{
+    const breakdown = `10 kids + 10 adults · +${fmt(pkg.perKid)} per extra kid`;
+    const orig = pkg.orig ? `<div class="orig">Original ${fmt(pkg.orig)}</div>` : `<div class="orig" style="visibility:hidden">.</div>`;
+    return `
+      <div class="pkg ${state.pkgId===pkg.id?"sel":""}" style="--pc:${pkg.cssvar}" data-pkg="${pkg.id}" tabindex="0" role="button" aria-pressed="${state.pkgId===pkg.id}">
+        ${pkg.badge?`<span class="badge">${pkg.badge}</span>`:""}
+        <div class="phead">
+          <div class="pname">${pkg.name}</div>
+          <div class="ptitle">${pkg.title}</div>
+        </div>
+        <div class="pbody">
+          <div class="price">${fmt(pkg.base)} <small>base</small></div>
+          ${orig}
+          <div class="breakdown">${breakdown}</div>
+          <ul>${pkg.features.map(f=>`<li>${f}</li>`).join("")}</ul>
+          <div class="choose">${state.pkgId===pkg.id?"✓ Selected":"Choose this package"}</div>
+        </div>
+      </div>`;
+  }).join("");
+  return `
+    <h2>Choose your package</h2>
+    <p class="sub">Each package includes <b>10 kids + 10 adults</b>. Extra kids (+$35 each) are added at the final step.</p>
+    <div class="pkgs">${cards}</div>`;
+}
+
+function step3(){
+  // Themes come with Package 3 & 4 only — Packages 1 & 2 use classic décor.
+  const themeLocked = state.pkgId !== null && state.pkgId <= 2;
+  const cards = THEMES.map((t)=>`
+    <button class="theme ${state.theme===t.n?"sel":""}" data-theme="${t.n}">
+      <span class="emoji">${t.e}</span>
+      <span class="tname">${t.n}</span>
+      <span class="tick">${state.theme===t.n?"✓ Selected":""}</span>
+    </button>`).join("");
+  const themeBlock = themeLocked
+    ? `<div class="theme-note">🎨 Party themes are available with <b>Package 3 (Luxury)</b> and <b>Package 4 (VIP)</b> — your package includes our classic décor. Want a themed party? Go back and upgrade your package.</div>`
+    : `<div class="themes">${cards}</div>`;
+  const opts = OPTIONS.map(cat=>`
+    <div class="opt-cat-title">${cat.cat}</div>
+    <div class="opt-list">${cat.items.map(i=>{
+      const q = state.options[i.id]||0;
+      return `<div class="opt-row ${q>0?"on":""}">
+        <div class="opt-info"><span class="opt-name">${i.n}</span><span class="opt-price">${fmt(i.p)} each</span></div>
+        <div class="opt-stepper" data-opt="${i.id}">
+          <button class="opt-minus" ${q<=0?"disabled":""} aria-label="remove one ${i.n}">−</button>
+          <span class="opt-q">${q}</span>
+          <button class="opt-plus" aria-label="add one ${i.n}">+</button>
+        </div>
+      </div>`;
+    }).join("")}</div>`).join("");
+  return `
+    <h2>Customize your party 🎨</h2>
+    <p class="sub">${themeLocked ? "Add any extras you'd like — all optional." : "Pick one theme, then add any extras you'd like. Both optional."}</p>
+    ${themeBlock}
+    <div class="pkg-notes">
+      <div class="pn-title">🎈 Party Package Notes</div>
+      <div class="pn-row">Additional guests <b>$35 / child</b> <span>(includes 1 accompanying adult)</span></div>
+      <div class="pn-row" style="margin-top:6px"><b>Included free</b> <span>as your group grows — no extra charge:</span></div>
+      <div class="pn-row">🍕 11th–15th guests: <b>1 Pizza + 1 × 2L Lemonade</b> <span>included</span></div>
+      <div class="pn-row">🍕 16th–20th guests: <b>2 Pizzas + 2 × 2L Lemonades</b> <span>included</span></div>
+      <div class="pn-row">🍕 21st–25th guests: <b>3 Pizzas + 3 × 2L Lemonades</b> <span>included</span></div>
+      <div class="pn-row">🍕 26th–30th guests: <b>4 Pizzas + 4 × 2L Lemonades</b> <span>included</span></div>
+      <div class="pn-row" style="margin-top:6px">🥡 Outside food: <b>light snacks only</b> <span>($100 cleaning fee applies)</span></div>
+    </div>
+    <div class="field-label" style="margin-top:24px">✨ Add-on extras <span style="font-weight:400;color:var(--muted);font-size:13px">(optional — choose any quantity)</span></div>
+    ${opts}`;
+}
+
+function step4(){
+  const t = partyTotals();
+  const pkg = t.pkg;
+  const sel = selectedOptions();
+  const payCancelled = state.payCancelled; state.payCancelled = false; // one-shot notice
+  return `
+    <h2>Review & deposit</h2>
+    <p class="sub">Confirm the details, then pay the ${fmt(DEPOSIT)} deposit to lock in your date.</p>
+    ${payCancelled?`<div class="policy-note" style="background:#FDEEF2;border-color:#F4C4D2;color:#9a3b58">Payment cancelled — your card wasn't charged. Your selections are saved; pay the deposit below whenever you're ready.</div>`:""}
+    <div class="review-grid">
+      <div class="rev"><div class="k">Date</div><div class="v">${prettyDate(state.dateISO)}</div></div>
+      <div class="rev"><div class="k">Time</div><div class="v">${state.time}</div></div>
+      <div class="rev"><div class="k">Guests</div><div class="v">${state.kids} kids + ${t.adults} adults</div></div>
+      <div class="rev"><div class="k">Package</div><div class="v">${pkg.title.replace(/[⭐💖🌟👑]/g,"").trim()}</div></div>
+      <div class="rev" style="grid-column:1/-1"><div class="k">Theme</div>
+        <div class="v">${state.theme || "—"}</div></div>
+    </div>
+    <div class="field-label" style="margin-top:20px">🎂 Birthday star</div>
+    <input class="tin" id="cName" type="text" placeholder="Birthday child's name" value="${state.childName}" />
+    <div class="duo">
+      <input class="tin" id="cAge" type="number" min="1" max="17" inputmode="numeric" placeholder="Age 🎈" value="${state.childAge}" />
+      <select class="tin" id="cGender">
+        <option value="">Gender…</option>
+        <option ${state.childGender==="Girl"?"selected":""}>Girl</option>
+        <option ${state.childGender==="Boy"?"selected":""}>Boy</option>
+        <option value="Prefer not to say" ${state.childGender==="Prefer not to say"?"selected":""}>Prefer not to say</option>
+      </select>
+    </div>
+    <input class="tin" id="cAllergy" type="text" placeholder="Allergies / dietary requirements (optional)" value="${state.allergies}" />
+    <textarea class="tin" id="cNotes" rows="2" placeholder="Anything we should know? (optional)">${state.notes}</textarea>
+    <div class="kid-note">The age sets your child's number balloon 🎈.</div>
+
+    <div class="field-label" style="margin-top:20px">👤 Your details</div>
+    <input class="tin" id="fName" type="text" placeholder="Full name" value="${state.name}" autocomplete="name" />
+    <input class="tin" id="fPhone" type="tel" placeholder="Phone number" value="${state.phone}" autocomplete="tel" />
+    <input class="tin" id="fEmail" type="email" placeholder="Email address" value="${state.email}" autocomplete="email" />
+    <div class="kid-note">We'll send your reservation confirmation to this email.</div>
+
+    <div class="field-label" style="margin-top:20px">🎟️ Discount code <span style="font-weight:400;color:var(--muted);font-size:13px">(optional)</span></div>
+    <div class="disc-row">
+      <input class="tin" id="discInput" type="text" placeholder="Enter code" value="${state.discountCode||""}" style="margin-top:0;text-transform:uppercase" />
+      <button class="disc-apply" id="discApply">${state.discountCode?"Remove":"Apply"}</button>
+    </div>
+    ${state.discountCode?`<div class="disc-msg ok">✓ Code ${state.discountCode} applied — 10% off the subtotal.</div>`:""}
+    ${state.discountError?`<div class="disc-msg err">${state.discountError}</div>`:""}
+
+    <div class="price-box">
+      <div class="sum-row"><span class="k">${pkg.name} base (10 kids + 10 adults)</span><span class="v">${money(pkg.base)}</span></div>
+      ${t.extra>0?`<div class="sum-row"><span class="k">${t.extra} extra kid${t.extra>1?"s":""} × ${fmt(pkg.perKid)} (incl. 1 adult)</span><span class="v">${money(t.kidsExtra)}</span></div>`:""}
+      ${sel.map(o=>`<div class="sum-row"><span class="k">${o.q} × ${o.n}</span><span class="v">${money(o.q*o.p)}</span></div>`).join("")}
+      ${t.discount>0?`<div class="sum-row"><span class="k">Items total</span><span class="v">${money(t.gross)}</span></div>
+      <div class="sum-row" style="color:var(--ok)"><span class="k">Discount (${state.discountCode}, 10%)</span><span class="v">−${money(t.discount)}</span></div>`:""}
+      <div class="divider"></div>
+      <div class="sum-row"><span class="k">Subtotal</span><span class="v">${money(t.subtotal)}</span></div>
+      <div class="sum-row"><span class="k">Tax (8.625%)</span><span class="v">${money(t.tax)}</span></div>
+      <div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>
+      <div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>
+      <div class="sum-row"><span class="k">Balance due at venue</span><span class="v">${money(t.balance)}</span></div>
+    </div>
+    <p class="small-note">You'll be taken to a secure Stripe checkout to pay the ${fmt(DEPOSIT)} deposit by card. Your date is locked in the moment payment completes.</p>
+    <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${fmt(DEPOSIT)} deposit is paid</b>.<br>⚠️ ${fmt(DEPOSIT)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>`;
+}
+
+function step5(){
+  const idLine = state.bookingId ? `<p class="small-note">Booking ID: ${state.bookingId}</p>` : "";
+  const pkg = pkgById(state.pkgId);
+  if (!pkg){
+    // Cold return from Stripe (snapshot lost, e.g. a different tab/device) — the
+    // payment still succeeded; the emailed confirmation has the full details.
+    return `
+    <div class="confirm-hero">
+      <div class="big">🎉🐤🎈</div>
+      <h2>Deposit received!</h2>
+      <p class="sub">Your ${fmt(DEPOSIT)} deposit was received and your date is locked in. Check your email (and spam, just in case) for the full confirmation. Questions? Call (516) 243-9397.</p>
+    </div>
+    ${idLine}`;
+  }
+  const t = partyTotals();
+  const cleanTitle = pkg.title.replace(/[⭐💖🌟👑]/g,"").trim();
+  const firstName = state.name ? state.name.split(" ")[0] : "";
+  const sel = selectedOptions();
+  const extrasRecap = sel.length ? "\n\nExtras:\n" + sel.map(o=>`  ${o.q} × ${o.n}  ${money(o.q*o.p)}`).join("\n") : "";
+  const childAgeStr = state.childAge ? ` (turning ${state.childAge})` : "";
+  const extraInfo =
+    (state.allergies ? `\nAllergies:        ${state.allergies}` : "") +
+    (state.notes ? `\nNotes:            ${state.notes}` : "");
+  const discountRecap = t.discount>0 ? `Items total:      ${money(t.gross)}\nDiscount (${state.discountCode}): −${money(t.discount)}\n` : "";
+  const recap =
+`Date:             ${prettyDate(state.dateISO)}
+Time:             ${state.time}
+Guests:           ${state.kids} kids + ${t.adults} adults
+Birthday child:   ${state.childName || "—"}${childAgeStr}
+Gender:           ${state.childGender || "—"}
+Package:          ${cleanTitle} (${pkg.name})
+Theme:            ${state.theme || "None selected"}${extraInfo}${extrasRecap}
+
+${discountRecap}Subtotal:         ${money(t.subtotal)}
+Tax (8.625%):     ${money(t.tax)}
+Sale total:       ${money(t.saleTotal)}
+Deposit paid:     ${money(DEPOSIT)}
+Balance at venue: ${money(t.balance)}`;
+  return `
+    <div class="confirm-hero">
+      <div class="big">🎉🐤🎈</div>
+      <h2>You're booked${firstName?`, ${firstName}`:""}!</h2>
+      <p class="sub">Your ${fmt(DEPOSIT)} deposit was received and your date is <b>locked in</b>. We just emailed your confirmation to ${state.email || "your email"} — we can't wait to celebrate!</p>
+    </div>
+    <div class="email-card">
+      <div class="ehead">📋 Your booking</div>
+      <pre>${recap.replace(/</g,"&lt;")}</pre>
+    </div>
+    <p class="small-note">Check your inbox (and spam, just in case) for our confirmation. Questions? Call (516) 243-9397.</p>
+    ${idLine}`;
+}
+
+/* ---------------- Render: summary ---------------- */
+function renderSummary(){
+  const s = $("#summary");
+  const pkg = state.pkgId ? pkgById(state.pkgId) : null;
+
+  const row = (k,v,empty) => `<div class="sum-row"><span class="k">${k}</span>
+    <span class="v ${empty?"sum-empty":""}">${v}</span></div>`;
+
+  let body = "";
+  body += row("Date", state.dateISO ? prettyDate(state.dateISO) : "Not selected", !state.dateISO);
+  body += row("Time", state.time || "Not selected", !state.time);
+  body += row("Guests", state.kids + " kids + " + (10 + Math.max(0, state.kids-10)) + " adults");
+  body += row("Package", pkg ? pkg.title.replace(/[⭐💖🌟👑]/g,"").trim() : "Not selected", !pkg);
+  if (state.theme) body += row("Theme", state.theme);
+
+  // Until the final review/confirmation steps, the summary shows only the $500
+  // deposit; the full price breakdown appears on step 4+.
+  let compact = ""; // condensed total shown on mobile, where the full summary is hidden
+  if (state.step >= 4 && pkg){
+    const t = partyTotals();
+    body += `<div class="divider"></div>`;
+    body += row("Package (10 kids + 10 adults)", money(pkg.base));
+    if (t.extra>0) body += row(`Extra kids (${t.extra} × ${fmt(pkg.perKid)})`, money(t.kidsExtra));
+    if (t.optionsSum>0) body += row(`Add-on extras (${selectedOptions().length})`, money(t.optionsSum));
+    if (t.discount>0) body += row(`Discount (${state.discountCode}, 10%)`, "−"+money(t.discount));
+    body += row("Subtotal", money(t.subtotal));
+    body += row("Tax (8.625%)", money(t.tax));
+    body += `<div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>`;
+    body += `<div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+    body += row("Balance due", money(t.balance));
+    compact = `<div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>
+      <div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+  } else {
+    // Earlier steps — show just the deposit to reserve; full price comes at review.
+    body += `<div class="divider"></div>`;
+    body += `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+    body += `<div class="sum-row"><span class="k sum-empty">Full price shown at review</span><span class="v"></span></div>`;
+    compact = `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+  }
+
+  // CTA
+  const cta = ctaConfig();
+  const back = state.step>1 && state.step<5
+    ? `<button class="back-link" id="backBtn">← Back</button>` : "";
+
+  s.innerHTML = `
+    <div class="summary-detail">
+      <h3>Order Summary</h3>
+      <div class="venue">
+        <b>Waddle Waddle NY</b>
+        120 Voice Rd. Carle Place, NY 11514<br>
+        <span style="opacity:.7">(516) 243-9397</span>
+      </div>
+      ${body}
+    </div>
+    ${compact ? `<div class="summary-compact">${compact}</div>` : ""}
+    <button class="cta" id="ctaBtn" ${cta.disabled?"disabled":""}>${cta.label}</button>
+    ${back}
+  `;
+  $("#ctaBtn").onclick = cta.action;
+  if ($("#backBtn")) $("#backBtn").onclick = ()=>{ state.step--; render(); };
+}
+
+function ctaConfig(){
+  switch(state.step){
+    case 1:{
+      const ok = state.dateISO && state.time;
+      return { label:"Continue to packages", disabled:!ok, action:()=>{ if(ok){state.step=2;render();} } };
+    }
+    case 2:{
+      const ok = !!state.pkgId;
+      return { label:"Continue to themes", disabled:!ok, action:()=>{ if(ok){state.step=3;render();} } };
+    }
+    case 3:
+      return { label:"Continue to review", disabled:false, action:()=>{ state.step=4; render(); } };
+    case 4:{
+      const ok = reserveValid();
+      // Re-check at click time: the inputs update without a re-render,
+      // so the captured `ok` goes stale once the user fills the form.
+      return { label:`Pay ${fmt(DEPOSIT)} deposit`, disabled:!ok, action:()=>{ if(reserveValid()) payDeposit(); } };
+    }
+    default:
+      return { label:"Start a new booking", disabled:false, action:resetBooking };
+  }
+}
+
+function resetBooking(){
+  state.step=1; state.dateISO=null; state.time=null; state.kids=10; state.pkgId=null; state.theme=null; state.options={};
+  state.childName=""; state.childAge=""; state.childGender=""; state.allergies=""; state.notes="";
+  state.discountCode=null; state.discountError="";
+  state.name=""; state.phone=""; state.email=""; state.bookingId=null; state.payCancelled=false;
+  render();
+}
+
+// Create a Stripe Checkout session for the $500 deposit and redirect to it.
+// We snapshot the booking to sessionStorage first so the step-5 confirmation can
+// be rebuilt when Stripe redirects back. Confirmation emails are sent by the
+// webhook after payment — not here.
+async function payDeposit(){
+  if (submitting) return;
+  submitting = true;
+  const btn = $("#ctaBtn");
+  if (btn){ btn.disabled = true; btn.textContent = "Starting secure checkout…"; }
+  try {
+    const res = await fetch(API_BASE + "/create-checkout", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        dateISO: state.dateISO, time: state.time, kids: state.kids,
+        pkgId: state.pkgId, theme: state.theme, options: state.options,
+        childName: state.childName.trim(), childAge: Number(state.childAge)||null,
+        childGender: state.childGender, allergies: state.allergies.trim(),
+        notes: state.notes.trim(), discountCode: state.discountCode,
+        name: state.name.trim(), phone: state.phone.trim(), email: state.email.trim()
+      })
+    });
+    if (res.status === 409){
+      // The slot filled up between picking it and paying. Send them back to step 1.
+      delete availability[state.dateISO];
+      state.time = null; state.step = 1; state.slotFull = true;
+      submitting = false; render();
+      return;
+    }
+    if (!res.ok) throw new Error("request " + res.status);
+    const data = await res.json();
+    if (!data.url) throw new Error("no checkout url");
+    state.bookingId = data.bookingId || null;
+    try { sessionStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch {}
+    window.location.href = data.url; // hand off to Stripe
+  } catch (err){
+    if (btn){ btn.disabled = false; btn.textContent = `Pay ${fmt(DEPOSIT)} deposit`; }
+    alert("Sorry — we couldn't start checkout. Please try again, or call us at (516) 243-9397.");
+    submitting = false;
+  }
+}
+
+/* ---------------- Wiring ---------------- */
+function wirePanel(){
+  if (state.step===1){
+    $("#dateInput").onchange = e=>{
+      // Update only the slots below — a full render() would replace the date
+      // <input> and tear down the open native picker (the "auto-today / snap-shut" bug).
+      const min = toISO(leadStartDate());
+      let v = e.target.value || null;
+      if (v && v < min){ v = null; e.target.value = ""; } // enforce the 14-day lead on manual entry
+      state.dateISO = v;
+      if (state.dateISO && !slotsFor(state.dateISO).includes(state.time)) state.time=null;
+      $("#slotsWrap").innerHTML = slotsMarkup();
+      wireSlots();
+      renderSummary();
+      fetchAvailability(state.dateISO);
+    };
+    document.querySelectorAll(".chip").forEach(c=>{
+      c.onclick = ()=>{
+        state.dateISO = c.dataset.iso;
+        if (!slotsFor(state.dateISO).includes(state.time)) state.time=null;
+        scrollNext = "#sessionTimes"; render();
+        fetchAvailability(state.dateISO);
+      };
+    });
+    wireSlots();
+    // Landing on step 1 with a date already chosen (e.g. returning from Stripe): load its slots.
+    if (state.dateISO && !(state.dateISO in availability)) fetchAvailability(state.dateISO);
+    if ($("#kMinus")) $("#kMinus").onclick = ()=>{ if(state.kids>10){state.kids--; render();} };
+    if ($("#kPlus")) $("#kPlus").onclick = ()=>{ if(state.kids<30){state.kids++; render();} };
+  }
+  if (state.step===2){
+    document.querySelectorAll(".pkg").forEach(c=>{
+      const choose = ()=>{ state.pkgId = +c.dataset.pkg; if (state.pkgId <= 2) state.theme = null; scrollNext = "#summary"; render(); };
+      c.onclick = choose;
+      c.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); choose(); } };
+    });
+  }
+  if (state.step===3){
+    document.querySelectorAll(".theme").forEach(t=>{
+      t.onclick = ()=>{
+        const n = t.dataset.theme;
+        state.theme = (state.theme===n) ? null : n; // single-select, click again to clear
+        render(); // stay put so the customer can keep going to the extras below
+      };
+    });
+    document.querySelectorAll(".opt-stepper").forEach(st=>{
+      const id = st.dataset.opt;
+      const qEl = st.querySelector(".opt-q");
+      const minus = st.querySelector(".opt-minus");
+      const rowEl = st.closest(".opt-row");
+      const set = q=>{
+        q = Math.max(0, Math.min(99, q));
+        if (q===0) delete state.options[id]; else state.options[id] = q;
+        qEl.textContent = q;
+        minus.disabled = q<=0;
+        rowEl.classList.toggle("on", q>0);
+        renderSummary(); // live totals without re-rendering the long options list
+      };
+      st.querySelector(".opt-plus").onclick = ()=> set((state.options[id]||0)+1);
+      minus.onclick = ()=> set((state.options[id]||0)-1);
+    });
+  }
+  if (state.step===4){
+    // update state on input WITHOUT re-rendering (keeps focus); just toggle the Reserve button
+    const upd = ()=>{ const b=$("#ctaBtn"); if(b) b.disabled = !reserveValid(); };
+    const bind = (id,key)=>{ const el=$(id); if(el) el.oninput = e=>{ state[key]=e.target.value; upd(); }; };
+    bind("#cName","childName"); bind("#cAge","childAge"); bind("#cAllergy","allergies"); bind("#cNotes","notes");
+    bind("#fName","name"); bind("#fPhone","phone"); bind("#fEmail","email");
+    const g = $("#cGender"); if (g) g.onchange = e=>{ state.childGender = e.target.value; upd(); };
+    const apply = $("#discApply");
+    if (apply) apply.onclick = ()=>{
+      if (state.discountCode){ state.discountCode=null; state.discountError=""; render(); return; } // button reads "Remove"
+      const code = (($("#discInput").value)||"").trim().toUpperCase();
+      if (!code){ state.discountError=""; render(); return; }
+      if (DISCOUNT_CODES[code]){ state.discountCode=code; state.discountError=""; }
+      else { state.discountCode=null; state.discountError=`"${code}" isn't a valid code.`; }
+      render();
+    };
+  }
+}
+
+/* ---------------- Root render ---------------- */
+function render(){
+  const stepChanged = state.step !== prevStep;
+  renderSteps();
+  renderPanel();
+  renderSummary();
+  if (stepChanged){
+    window.scrollTo({top:0, behavior:"smooth"});                 // new step -> start at the top
+  } else if (scrollNext){
+    if (scrollNext === "#summary"){
+      // the summary + Continue button sits below the panel on mobile; reveal it there
+      if (window.matchMedia("(max-width:880px)").matches){
+        const el = document.querySelector("#summary");
+        if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+      }
+    } else {
+      const el = document.querySelector(scrollNext);
+      if (el) el.scrollIntoView({behavior:"smooth", block:"nearest"}); // no-op if already in view
+    }
+  }
+  scrollNext = null;
+  prevStep = state.step;
+}
+
+// Handle a return from Stripe Checkout. Before redirecting we snapshot the booking
+// to sessionStorage; here we restore it and show the right screen, then clean the URL.
+(function handleStripeReturn(){
+  const params = new URLSearchParams(location.search);
+  const status = params.get("status");
+  if (status !== "success" && status !== "cancel") return;
+
+  let snap = null;
+  try { snap = JSON.parse(sessionStorage.getItem(SAVE_KEY) || "null"); } catch {}
+
+  if (status === "success"){
+    if (snap) Object.assign(state, snap);            // full recap; cold return → generic step 5
+    state.bookingId = params.get("booking") || (snap && snap.bookingId) || null;
+    state.step = 5;
+    try { sessionStorage.removeItem(SAVE_KEY); } catch {}
+  } else {                                           // cancel — card not charged
+    if (snap){ Object.assign(state, snap); state.step = 4; }
+    else { state.step = 1; }                         // cold cancel → start over with a note
+    state.payCancelled = true;
+  }
+  history.replaceState(null, "", location.pathname); // strip ?status=… so refresh is clean
+})();
+
+render();
+</script>
+</body>
+</html>
