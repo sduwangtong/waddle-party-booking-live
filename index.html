@@ -304,43 +304,44 @@
 /* ---------------- Data ---------------- */
 const PACKAGES = [
   {
-    id:1, name:"PACKAGE 1", title:"⭐ Classic ⭐", base:599, orig:null, perKid:35,
+    id:1, name:"PACKAGE 1", title:"⭐ Classic ⭐", base:599, orig:null, perKid:35, includedKids:10,
     cssvar:"var(--p1)", badge:null,
     features:[
-      "10 kids","10 Adults","2Hr Private Party Room & Playground Access",
+      "10 kids","10 Adults","1 Hr 45 Min Private Party Room & Playground Access",
       "2 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid",
-      "Age Number Balloon","Classic Tableware","Setup & Cleanup","Backdrop (Happy Birthday)"
+      "Age Number Balloon","Classic Tableware","Setup & Cleanup","Backdrop (Happy Birthday)",
+      "2 of 2L Lemonade or 2L Soda"
     ]
   },
   {
-    id:2, name:"PACKAGE 2", title:"💖 Premium 💖", base:899, orig:null, perKid:35,
+    id:2, name:"PACKAGE 2", title:"💖 Premium 💖", base:899, orig:null, perKid:35, includedKids:10,
     cssvar:"var(--p2)", badge:null,
     features:[
-      "10 kids","10 Adults","2Hr Private Party Room & Playground Access",
+      "10 kids","10 Adults","1 Hr 45 Min Private Party Room & Playground Access",
       "2 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid",
       "Age Number Balloon","Classic Tableware","Setup & Cleanup",
-      "Fruit Pouch for Each Kid","2L Lemonade","Bottle Water","Balloon Garland (6ft)",
+      "Fruit Pouch for Each Kid","2 of 2L Lemonade or 2L Soda","Bottle Water","Balloon Garland (6ft)",
       "Backdrop (Happy Birthday)","Party Welcome Sign"
     ]
   },
   {
-    id:3, name:"PACKAGE 3", title:"🌟 Luxury 🌟", base:1399, orig:1793, perKid:35,
+    id:3, name:"PACKAGE 3", title:"🌟 Luxury 🌟", base:1399, orig:1793, perKid:35, includedKids:12,
     cssvar:"var(--p3)", badge:"BEST VALUE",
     features:[
-      "10 kids","10 Adults","2Hr Private Party Room & Unlimited Playground Access",
+      "12 kids","12 Adults","1 Hr 45 Min Private Party Room & Unlimited Playground Access",
       "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
-      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","2L Lemonade","Bottle Water",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","Bottle Water",
       "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
       "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid"
     ]
   },
   {
-    id:4, name:"PACKAGE 4", title:"👑 VIP 👑", base:1799, orig:1999, perKid:35,
+    id:4, name:"PACKAGE 4", title:"👑 VIP 👑", base:1799, orig:1999, perKid:35, includedKids:12,
     cssvar:"var(--p4)", badge:"VIP EXPERIENCE",
     features:[
-      "10 kids","10 Adults","2Hr Private Party Room & Unlimited Playground Access",
+      "12 kids","12 Adults","1 Hr 45 Min Private Party Room & Unlimited Playground Access",
       "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
-      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","2L Lemonade","Bottle Water",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","Bottle Water",
       "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
       "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid",
       "Balloon Cake","Balloon Flower","Balloon Fireworks",
@@ -392,6 +393,8 @@ const DEPOSIT = 500;
 const TAX_RATE = 0.08625; // 8.625% sales tax (applied to the full party total, deposit included)
 const DEPOSIT_TAX = Math.round(DEPOSIT * TAX_RATE * 100) / 100; // 43.13 — tax on the deposit base
 const DEPOSIT_DUE = DEPOSIT + DEPOSIT_TAX;                       // 543.13 — charged now (card), incl. tax
+const MIN_KIDS = 10;  // smallest party (P1/P2 base); P3/P4 base covers 12 (see includedKids)
+const MAX_KIDS = 25;  // max party size — 25 kids + 25 adults
 const LEAD_DAYS = 14; // parties must be booked at least 14 days out (12-day prep + buffer)
 const DISCOUNT_CODES = { DAYCARE122:0.10, IMMEMBER:0.10, WEEKDAY1:0.10 }; // 10% off the pre-tax subtotal
 
@@ -417,6 +420,7 @@ const fmt = n => "$" + Number(n).toLocaleString("en-US");
 const money = n => "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const round2 = n => Math.round(n * 100) / 100; // mirror pricing.mjs so display matches the server to the cent
 const pkgById = id => PACKAGES.find(p => p.id === id);
+const includedKids = () => state.pkgId ? pkgById(state.pkgId).includedKids : MIN_KIDS; // base guests for the chosen package
 function optionsTotal(){
   return Object.entries(state.options).reduce((s,[id,q])=> s + (OPTION_BY_ID[id]?.p||0)*Number(q||0), 0);
 }
@@ -428,8 +432,8 @@ function selectedOptions(){
 function partyTotals(){
   const pkg = pkgById(state.pkgId);
   if (!pkg) return null;
-  const extra = Math.max(0, state.kids - 10);
-  const adults = 10 + extra;            // each extra kid includes 1 accompanying adult
+  const extra = Math.max(0, state.kids - pkg.includedKids);
+  const adults = pkg.includedKids + extra;            // each extra kid includes 1 accompanying adult
   const kidsExtra = extra * pkg.perKid;
   const optionsSum = optionsTotal();
   const gross = pkg.base + kidsExtra + optionsSum;               // pre-discount, pre-tax
@@ -571,23 +575,23 @@ function step1(){
     <div class="chips" style="margin-top:12px">${chips}</div>
     <div class="kid-note">⏳ We need at least ${LEAD_DAYS} days to prepare — the earliest available date is <b>${prettyDate(minISO)}</b>.</div>
 
-    <div class="field-label" id="sessionTimes">⏰ Session time <span style="font-weight:400;color:var(--muted);font-size:13px">(2-hour private room)</span></div>
+    <div class="field-label" id="sessionTimes">⏰ Session time <span style="font-weight:400;color:var(--muted);font-size:13px">(1 hr 45 min private room)</span></div>
     <div id="slotsWrap">${slotsMarkup()}</div>
 
     <div class="field-label" id="kidsField">🧒 Number of kids</div>
     <div class="stepper">
-      <button id="kMinus" ${state.kids<=10?"disabled":""}>−</button>
+      <button id="kMinus" ${state.kids<=includedKids()?"disabled":""}>−</button>
       <span class="count" id="kCount">${state.kids}</span>
-      <button id="kPlus" ${state.kids>=30?"disabled":""}>+</button>
+      <button id="kPlus" ${state.kids>=MAX_KIDS?"disabled":""}>+</button>
     </div>
-    <div class="kid-note">10 kids + 10 adults included in every package · max 30 kids.
-      ${state.kids>10 ? `<br><b>${state.kids-10} extra kid${state.kids-10>1?"s":""}</b> — +$35 each (includes 1 adult per child).` : ""}</div>
+    <div class="kid-note">${includedKids()} kids + ${includedKids()} adults included${state.pkgId?"":" (10 for Packages 1–2, 12 for Packages 3–4)"} · max ${MAX_KIDS} kids.
+      ${state.kids>includedKids() ? `<br><b>${state.kids-includedKids()} extra kid${state.kids-includedKids()>1?"s":""}</b> — +$35 each (includes 1 adult per child).` : ""}</div>
   `;
 }
 
 function step2(){
   const cards = PACKAGES.map(pkg=>{
-    const breakdown = `10 kids + 10 adults · +${fmt(pkg.perKid)} per extra kid`;
+    const breakdown = `${pkg.includedKids} kids + ${pkg.includedKids} adults · +${fmt(pkg.perKid)} per extra kid`;
     const orig = pkg.orig ? `<div class="orig">Original ${fmt(pkg.orig)}</div>` : `<div class="orig" style="visibility:hidden">.</div>`;
     return `
       <div class="pkg ${state.pkgId===pkg.id?"sel":""}" style="--pc:${pkg.cssvar}" data-pkg="${pkg.id}" tabindex="0" role="button" aria-pressed="${state.pkgId===pkg.id}">
@@ -607,7 +611,8 @@ function step2(){
   }).join("");
   return `
     <h2>Choose your package</h2>
-    <p class="sub">Each package includes <b>10 kids + 10 adults</b>. Extra kids (+$35 each) are added at the final step.</p>
+    <p class="sub">Packages 1–2 include <b>10 kids + 10 adults</b>; Packages 3–4 include <b>12 + 12</b>. Extra kids (+$35 each) are added at the final step.</p>
+    <div class="kid-note" style="background:#FDEEF2;border:1px solid #F4C4D2;color:#9a3b58;text-align:center">⚠️ No self-decoration is allowed for any package.</div>
     <div class="pkgs">${cards}</div>`;
 }
 
@@ -644,10 +649,9 @@ function step3(){
       <div class="pn-title">🎈 Party Package Notes</div>
       <div class="pn-row">Additional guests <b>$35 / child</b> <span>(includes 1 accompanying adult)</span></div>
       <div class="pn-row" style="margin-top:6px"><b>Included free</b> <span>as your group grows — no extra charge:</span></div>
-      <div class="pn-row">🍕 11th–15th guests: <b>1 Pizza + 1 × 2L Lemonade</b> <span>included</span></div>
-      <div class="pn-row">🍕 16th–20th guests: <b>2 Pizzas + 2 × 2L Lemonades</b> <span>included</span></div>
-      <div class="pn-row">🍕 21st–25th guests: <b>3 Pizzas + 3 × 2L Lemonades</b> <span>included</span></div>
-      <div class="pn-row">🍕 26th–30th guests: <b>4 Pizzas + 4 × 2L Lemonades</b> <span>included</span></div>
+      <div class="pn-row">🍕 11th–15th guests: <b>1 Pizza + 1 × 2L Lemonade or Soda</b> <span>included</span></div>
+      <div class="pn-row">🍕 16th–20th guests: <b>2 Pizzas + 2 × 2L Lemonade or Soda</b> <span>included</span></div>
+      <div class="pn-row">🍕 21st–25th guests: <b>3 Pizzas + 3 × 2L Lemonade or Soda</b> <span>included</span></div>
       <div class="pn-row" style="margin-top:6px">🥡 Outside food: <b>light snacks only</b> <span>($100 cleaning fee applies)</span></div>
     </div>
     <div class="field-label" style="margin-top:24px">✨ Add-on extras <span style="font-weight:400;color:var(--muted);font-size:13px">(optional — choose any quantity)</span></div>
@@ -701,7 +705,7 @@ function step4(){
     ${state.discountError?`<div class="disc-msg err">${state.discountError}</div>`:""}
 
     <div class="price-box">
-      <div class="sum-row"><span class="k">${pkg.name} base (10 kids + 10 adults)</span><span class="v">${money(pkg.base)}</span></div>
+      <div class="sum-row"><span class="k">${pkg.name} base (${pkg.includedKids} kids + ${pkg.includedKids} adults)</span><span class="v">${money(pkg.base)}</span></div>
       ${t.extra>0?`<div class="sum-row"><span class="k">${t.extra} extra kid${t.extra>1?"s":""} × ${fmt(pkg.perKid)} (incl. 1 adult)</span><span class="v">${money(t.kidsExtra)}</span></div>`:""}
       ${sel.map(o=>`<div class="sum-row"><span class="k">${o.q} × ${o.n}</span><span class="v">${money(o.q*o.p)}</span></div>`).join("")}
       ${t.discount>0?`<div class="sum-row"><span class="k">Items total</span><span class="v">${money(t.gross)}</span></div>
@@ -780,7 +784,7 @@ function renderSummary(){
   let body = "";
   body += row("Date", state.dateISO ? prettyDate(state.dateISO) : "Not selected", !state.dateISO);
   body += row("Time", state.time || "Not selected", !state.time);
-  body += row("Guests", state.kids + " kids + " + (10 + Math.max(0, state.kids-10)) + " adults");
+  body += row("Guests", state.kids + " kids + " + (includedKids() + Math.max(0, state.kids-includedKids())) + " adults");
   body += row("Package", pkg ? pkg.title.replace(/[⭐💖🌟👑]/g,"").trim() : "Not selected", !pkg);
   if (state.theme) body += row("Theme", state.theme);
 
@@ -790,7 +794,7 @@ function renderSummary(){
   if (state.step >= 4 && pkg){
     const t = partyTotals();
     body += `<div class="divider"></div>`;
-    body += row("Package (10 kids + 10 adults)", money(pkg.base));
+    body += row("Package (" + pkg.includedKids + " kids + " + pkg.includedKids + " adults)", money(pkg.base));
     if (t.extra>0) body += row(`Extra kids (${t.extra} × ${fmt(pkg.perKid)})`, money(t.kidsExtra));
     if (t.optionsSum>0) body += row(`Add-on extras (${selectedOptions().length})`, money(t.optionsSum));
     if (t.discount>0) body += row(`Discount (${state.discountCode}, 10%)`, "−"+money(t.discount));
@@ -805,9 +809,9 @@ function renderSummary(){
   } else {
     // Earlier steps — show just the deposit to reserve; full price comes at review.
     body += `<div class="divider"></div>`;
-    body += `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card · incl. tax)</span><span class="v">${money(DEPOSIT_DUE)}</span></div>`;
+    body += `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
     body += `<div class="sum-row"><span class="k sum-empty">Full price shown at review</span><span class="v"></span></div>`;
-    compact = `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card · incl. tax)</span><span class="v">${money(DEPOSIT_DUE)}</span></div>`;
+    compact = `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
   }
 
   // CTA
@@ -933,12 +937,12 @@ function wirePanel(){
     wireSlots();
     // Landing on step 1 with a date already chosen (e.g. returning from Stripe): load its slots.
     if (state.dateISO && !(state.dateISO in availability)) fetchAvailability(state.dateISO);
-    if ($("#kMinus")) $("#kMinus").onclick = ()=>{ if(state.kids>10){state.kids--; render();} };
-    if ($("#kPlus")) $("#kPlus").onclick = ()=>{ if(state.kids<30){state.kids++; render();} };
+    if ($("#kMinus")) $("#kMinus").onclick = ()=>{ if(state.kids>includedKids()){state.kids--; render();} };
+    if ($("#kPlus")) $("#kPlus").onclick = ()=>{ if(state.kids<MAX_KIDS){state.kids++; render();} };
   }
   if (state.step===2){
     document.querySelectorAll(".pkg").forEach(c=>{
-      const choose = ()=>{ state.pkgId = +c.dataset.pkg; if (state.pkgId <= 2) state.theme = null; scrollNext = "#summary"; render(); };
+      const choose = ()=>{ state.pkgId = +c.dataset.pkg; if (state.pkgId <= 2) state.theme = null; state.kids = Math.max(state.kids, pkgById(state.pkgId).includedKids); scrollNext = "#summary"; render(); };
       c.onclick = choose;
       c.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); choose(); } };
     });
