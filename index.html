@@ -90,6 +90,7 @@
   .venue b { color:var(--accent); display:block; font-size:14px; }
   .sum-row { display:flex; justify-content:space-between; gap:10px; font-size:14px; padding:7px 0; }
   .sum-row .k { color:var(--muted); }
+  .sum-row .k small { display:block; font-weight:400; font-size:12px; color:#BDB7CF; margin-top:2px; }
   .sum-row .v { font-weight:600; text-align:right; }
   .sum-empty { color:#BDB7CF; font-style:italic; }
   .divider { height:1px; background:var(--line); margin:12px 0; }
@@ -388,7 +389,9 @@ const OPTIONS = [
 const OPTION_BY_ID = Object.fromEntries(OPTIONS.flatMap(c=>c.items).map(i=>[i.id, i]));
 
 const DEPOSIT = 500;
-const TAX_RATE = 0.08625; // 8.625% sales tax (applied to party total, not the deposit)
+const TAX_RATE = 0.08625; // 8.625% sales tax (applied to the full party total, deposit included)
+const DEPOSIT_TAX = Math.round(DEPOSIT * TAX_RATE * 100) / 100; // 43.13 — tax on the deposit base
+const DEPOSIT_DUE = DEPOSIT + DEPOSIT_TAX;                       // 543.13 — charged now (card), incl. tax
 const LEAD_DAYS = 14; // parties must be booked at least 14 days out (12-day prep + buffer)
 const DISCOUNT_CODES = { DAYCARE122:0.10, IMMEMBER:0.10, WEEKDAY1:0.10 }; // 10% off the pre-tax subtotal
 
@@ -412,6 +415,7 @@ let scrollNext = null;   // selector to reveal after a within-step selection
 const $ = sel => document.querySelector(sel);
 const fmt = n => "$" + Number(n).toLocaleString("en-US");
 const money = n => "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const round2 = n => Math.round(n * 100) / 100; // mirror pricing.mjs so display matches the server to the cent
 const pkgById = id => PACKAGES.find(p => p.id === id);
 function optionsTotal(){
   return Object.entries(state.options).reduce((s,[id,q])=> s + (OPTION_BY_ID[id]?.p||0)*Number(q||0), 0);
@@ -432,10 +436,15 @@ function partyTotals(){
   const discountRate = state.discountCode ? (DISCOUNT_CODES[state.discountCode] || 0) : 0;
   const discount = gross * discountRate;
   const subtotal = gross - discount;                             // 10% off applies before tax
-  const tax = subtotal * TAX_RATE;
-  const saleTotal = subtotal + tax;
-  const balance = saleTotal - DEPOSIT;
-  return { pkg, extra, adults, kidsExtra, optionsSum, gross, discountRate, discount, subtotal, tax, saleTotal, balance };
+  const tax = round2(subtotal * TAX_RATE);
+  const saleTotal = round2(subtotal + tax);
+  // Split tax (mirrors pricing.mjs): deposit charged now carries tax on its $500 base;
+  // the remainder (subtotal − 500) carries the rest of the tax, due at the venue.
+  const depositTax = round2(DEPOSIT * TAX_RATE);     // 43.13 (fixed)
+  const depositDue = round2(DEPOSIT + depositTax);   // 543.13 (fixed) — paid now
+  const remainingTax = round2(tax - depositTax);     // remainder absorbs the rounding cent
+  const balance = round2(saleTotal - depositDue);    // due at venue
+  return { pkg, extra, adults, kidsExtra, optionsSum, gross, discountRate, discount, subtotal, tax, saleTotal, depositTax, depositDue, remainingTax, balance };
 }
 function contactValid(){
   return state.name.trim().length > 1
@@ -652,7 +661,7 @@ function step4(){
   const payCancelled = state.payCancelled; state.payCancelled = false; // one-shot notice
   return `
     <h2>Review & deposit</h2>
-    <p class="sub">Confirm the details, then pay the ${fmt(DEPOSIT)} deposit to lock in your date.</p>
+    <p class="sub">Confirm the details, then pay the ${money(DEPOSIT_DUE)} deposit (incl. tax) to lock in your date.</p>
     ${payCancelled?`<div class="policy-note" style="background:#FDEEF2;border-color:#F4C4D2;color:#9a3b58">Payment cancelled — your card wasn't charged. Your selections are saved; pay the deposit below whenever you're ready.</div>`:""}
     <div class="review-grid">
       <div class="rev"><div class="k">Date</div><div class="v">${prettyDate(state.dateISO)}</div></div>
@@ -701,11 +710,11 @@ function step4(){
       <div class="sum-row"><span class="k">Subtotal</span><span class="v">${money(t.subtotal)}</span></div>
       <div class="sum-row"><span class="k">Tax (8.625%)</span><span class="v">${money(t.tax)}</span></div>
       <div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>
-      <div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>
-      <div class="sum-row"><span class="k">Balance due at venue</span><span class="v">${money(t.balance)}</span></div>
+      <div class="sum-row deposit-line"><span class="k">Paid now (card)<small>${money(DEPOSIT)} deposit + ${money(t.depositTax)} tax</small></span><span class="v">${money(t.depositDue)}</span></div>
+      <div class="sum-row"><span class="k">Remaining at venue<small>${money(t.subtotal - DEPOSIT)} + ${money(t.remainingTax)} tax</small></span><span class="v">${money(t.balance)}</span></div>
     </div>
-    <p class="small-note">You'll be taken to a secure Stripe checkout to pay the ${fmt(DEPOSIT)} deposit by card. Your date is locked in the moment payment completes.</p>
-    <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${fmt(DEPOSIT)} deposit is paid</b>.<br>⚠️ ${fmt(DEPOSIT)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>`;
+    <p class="small-note">You'll be taken to a secure Stripe checkout to pay the ${money(DEPOSIT_DUE)} deposit (${money(DEPOSIT)} + ${money(DEPOSIT_TAX)} tax) by card. Your date is locked in the moment payment completes.</p>
+    <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${money(DEPOSIT_DUE)} deposit is paid</b>.<br>⚠️ ${money(DEPOSIT_DUE)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>`;
 }
 
 function step5(){
@@ -718,7 +727,7 @@ function step5(){
     <div class="confirm-hero">
       <div class="big">🎉🐤🎈</div>
       <h2>Deposit received!</h2>
-      <p class="sub">Your ${fmt(DEPOSIT)} deposit was received and your date is locked in. Check your email (and spam, just in case) for the full confirmation. Questions? Call (516) 243-9397.</p>
+      <p class="sub">Your ${money(DEPOSIT_DUE)} deposit was received and your date is locked in. Check your email (and spam, just in case) for the full confirmation. Questions? Call (516) 243-9397.</p>
     </div>
     ${idLine}`;
   }
@@ -744,13 +753,13 @@ Theme:            ${state.theme || "None selected"}${extraInfo}${extrasRecap}
 ${discountRecap}Subtotal:         ${money(t.subtotal)}
 Tax (8.625%):     ${money(t.tax)}
 Sale total:       ${money(t.saleTotal)}
-Deposit paid:     ${money(DEPOSIT)}
-Balance at venue: ${money(t.balance)}`;
+Paid now (card):  ${money(t.depositDue)}   (${money(DEPOSIT)} deposit + ${money(t.depositTax)} tax)
+Due at venue:     ${money(t.balance)}   (${money(t.subtotal - DEPOSIT)} + ${money(t.remainingTax)} tax)`;
   return `
     <div class="confirm-hero">
       <div class="big">🎉🐤🎈</div>
       <h2>You're booked${firstName?`, ${firstName}`:""}!</h2>
-      <p class="sub">Your ${fmt(DEPOSIT)} deposit was received and your date is <b>locked in</b>. We just emailed your confirmation to ${state.email || "your email"} — we can't wait to celebrate!</p>
+      <p class="sub">Your ${money(DEPOSIT_DUE)} deposit was received and your date is <b>locked in</b>. We just emailed your confirmation to ${state.email || "your email"} — we can't wait to celebrate!</p>
     </div>
     <div class="email-card">
       <div class="ehead">📋 Your booking</div>
@@ -775,8 +784,8 @@ function renderSummary(){
   body += row("Package", pkg ? pkg.title.replace(/[⭐💖🌟👑]/g,"").trim() : "Not selected", !pkg);
   if (state.theme) body += row("Theme", state.theme);
 
-  // Until the final review/confirmation steps, the summary shows only the $500
-  // deposit; the full price breakdown appears on step 4+.
+  // Until the final review/confirmation steps, the summary shows only the deposit
+  // to reserve ($543.13, incl. tax); the full price breakdown appears on step 4+.
   let compact = ""; // condensed total shown on mobile, where the full summary is hidden
   if (state.step >= 4 && pkg){
     const t = partyTotals();
@@ -788,16 +797,17 @@ function renderSummary(){
     body += row("Subtotal", money(t.subtotal));
     body += row("Tax (8.625%)", money(t.tax));
     body += `<div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>`;
-    body += `<div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
-    body += row("Balance due", money(t.balance));
+    body += `<div class="sum-row deposit-line"><span class="k">Paid now (card)</span><span class="v">${money(t.depositDue)}</span></div>`;
+    body += row("Remaining at venue", money(t.balance));
     compact = `<div class="sum-row grand"><span class="k">Sale total</span><span class="v">${money(t.saleTotal)}</span></div>
-      <div class="sum-row deposit-line"><span class="k">Deposit due now (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+      <div class="sum-row deposit-line"><span class="k">Paid now (card)</span><span class="v">${money(t.depositDue)}</span></div>
+      <div class="sum-row"><span class="k">Remaining at venue</span><span class="v">${money(t.balance)}</span></div>`;
   } else {
     // Earlier steps — show just the deposit to reserve; full price comes at review.
     body += `<div class="divider"></div>`;
-    body += `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+    body += `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card · incl. tax)</span><span class="v">${money(DEPOSIT_DUE)}</span></div>`;
     body += `<div class="sum-row"><span class="k sum-empty">Full price shown at review</span><span class="v"></span></div>`;
-    compact = `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card)</span><span class="v">${money(DEPOSIT)}</span></div>`;
+    compact = `<div class="sum-row deposit-line"><span class="k">Deposit to reserve (card · incl. tax)</span><span class="v">${money(DEPOSIT_DUE)}</span></div>`;
   }
 
   // CTA
@@ -839,7 +849,7 @@ function ctaConfig(){
       const ok = reserveValid();
       // Re-check at click time: the inputs update without a re-render,
       // so the captured `ok` goes stale once the user fills the form.
-      return { label:`Pay ${fmt(DEPOSIT)} deposit`, disabled:!ok, action:()=>{ if(reserveValid()) payDeposit(); } };
+      return { label:`Pay ${money(DEPOSIT_DUE)} deposit`, disabled:!ok, action:()=>{ if(reserveValid()) payDeposit(); } };
     }
     default:
       return { label:"Start a new booking", disabled:false, action:resetBooking };
@@ -854,7 +864,7 @@ function resetBooking(){
   render();
 }
 
-// Create a Stripe Checkout session for the $500 deposit and redirect to it.
+// Create a Stripe Checkout session for the deposit ($500 + tax = $543.13) and redirect to it.
 // We snapshot the booking to sessionStorage first so the step-5 confirmation can
 // be rebuilt when Stripe redirects back. Confirmation emails are sent by the
 // webhook after payment — not here.
@@ -890,7 +900,7 @@ async function payDeposit(){
     try { sessionStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch {}
     window.location.href = data.url; // hand off to Stripe
   } catch (err){
-    if (btn){ btn.disabled = false; btn.textContent = `Pay ${fmt(DEPOSIT)} deposit`; }
+    if (btn){ btn.disabled = false; btn.textContent = `Pay ${money(DEPOSIT_DUE)} deposit`; }
     alert("Sorry — we couldn't start checkout. Please try again, or call us at (516) 243-9397.");
     submitting = false;
   }
