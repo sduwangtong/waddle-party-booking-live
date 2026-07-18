@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Waddle Waddle NY — Slot Blocking (Admin)</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink:#3A3550; --muted:#6E6886; --line:#ECE7F5;
+    --bg:#F1E9F6; --card:#FFFFFF; --accent:#8B7DE8; --sage:#BED0B7;
+    --ok:#27AE60; --warn:#D43A64; --shadow:0 10px 30px rgba(120,80,200,.12);
+    --radius:20px;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:2px; border-radius:6px; }
+  body {
+    font-family:"Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    color:var(--ink); background:var(--bg); min-height:100vh;
+  }
+  header.top { text-align:center; padding:22px 16px; background:var(--sage); }
+  header.top h1 { margin:0; font-size:20px; }
+  header.top p { margin:6px 0 0; color:#494661; font-size:13px; }
+
+  .wrap { max-width:720px; margin:24px auto 60px; padding:0 16px; }
+  .panel {
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:24px; margin-bottom:18px;
+  }
+  .panel h2 { margin:0 0 4px; font-size:18px; }
+  .panel .sub { color:var(--muted); margin:0 0 18px; font-size:13px; }
+
+  label.field-label { display:block; font-weight:600; font-size:14px; margin:0 0 8px; }
+  input[type="date"], input[type="text"], input[type="password"] {
+    font-family:inherit; font-size:15px; padding:11px 14px; border:2px solid var(--line);
+    border-radius:12px; color:var(--ink); width:100%; max-width:280px; background:#fff;
+  }
+  input:focus-visible { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(139,125,232,.25); }
+
+  .token-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .btn {
+    border:0; cursor:pointer; font-family:inherit; font-weight:600; font-size:14px;
+    padding:10px 16px; border-radius:12px; transition:filter .15s ease, transform .08s ease;
+  }
+  .btn:active { transform:translateY(1px); }
+  .btn-primary { background:linear-gradient(90deg,var(--accent),#A99BF2); color:#fff; box-shadow:0 6px 16px rgba(123,79,224,.3); }
+  .btn-primary:hover { filter:brightness(1.05); }
+  .btn-ghost { background:#fff; border:2px solid var(--line); color:var(--muted); }
+  .btn-ghost:hover { border-color:#C9BEF0; color:var(--ink); }
+  .btn-danger { background:#fff; border:2px solid var(--warn); color:var(--warn); }
+  .btn-danger:hover { background:var(--warn); color:#fff; }
+  .btn-block { background:var(--warn); color:#fff; box-shadow:0 6px 16px rgba(212,58,100,.25); }
+  .btn-block:hover { filter:brightness(1.05); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; filter:none; transform:none; }
+
+  .slot-row {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:2px solid var(--line); border-radius:14px; padding:12px 16px; margin-bottom:10px;
+  }
+  .slot-row.blocked { border-color:var(--warn); background:#FDF1F4; }
+  .slot-row.full { border-color:#E0D8F2; background:#F8F5FC; }
+  .slot-info .time { font-weight:600; font-size:15px; }
+  .slot-info .meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .slot-row.blocked .meta { color:var(--warn); font-weight:600; }
+  .tag-full { font-size:11px; font-weight:600; color:var(--accent); background:#EFEAFB; padding:3px 8px; border-radius:999px; margin-left:8px; }
+
+  .day-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+
+  #status { font-size:13px; margin-top:10px; min-height:18px; }
+  #status.err { color:var(--warn); font-weight:600; }
+  #status.ok { color:var(--ok); font-weight:600; }
+  .hint { color:var(--muted); font-size:13px; }
+  .reason-input { margin-top:10px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>🔒 Slot Blocking — Admin</h1>
+  <p>Waddle Waddle NY · internal tool, not linked from the booking site</p>
+</header>
+
+<div class="wrap">
+
+  <!-- Login wall: nothing else renders until the token verifies against the API. -->
+  <div class="panel" id="loginView">
+    <h2>Sign in</h2>
+    <p class="sub">Enter the admin token to unlock this page. It's checked against the booking API and kept only in this browser.</p>
+    <div class="token-row">
+      <input type="password" id="tokenInput" placeholder="admin token" autocomplete="current-password" />
+      <button class="btn btn-primary" id="loginBtn">Sign in</button>
+    </div>
+    <div id="loginStatus" class="hint" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="appView" style="display:none;">
+
+  <div class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <h2>Pick a date</h2>
+      <button class="btn btn-ghost" id="signOutBtn">Sign out</button>
+    </div>
+    <p class="sub">Weekends show 4 slots, weekdays show the evening slot only.</p>
+    <label class="field-label" for="dateInput">Date</label>
+    <input type="date" id="dateInput" />
+  </div>
+
+  <div class="panel" id="slotsPanel" style="display:none;">
+    <h2 id="slotsHeading">Slots</h2>
+    <p class="sub">Each slot holds up to 3 bookings. Blocking closes it entirely to new bookings — existing paid bookings are untouched.</p>
+    <div id="slotsList"></div>
+    <div class="reason-input">
+      <label class="field-label" for="reasonInput">Reason (shown here only, not to customers)</label>
+      <input type="text" id="reasonInput" placeholder="e.g. whole-playground private party" maxlength="200" />
+    </div>
+    <div class="day-actions">
+      <button class="btn btn-block" id="blockDayBtn">Block whole day</button>
+      <button class="btn btn-ghost" id="unblockDayBtn">Unblock whole day</button>
+      <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  </div><!-- /appView -->
+
+</div>
+
+<script>
+const API_BASE = "https://ew68um0lpa.execute-api.us-east-1.amazonaws.com/prod";
+const TOKEN_KEY = "waddle_admin_token";
+
+const $ = sel => document.querySelector(sel);
+let currentData = null; // last /admin/blocks response for the selected date
+
+function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+function setToken(t){ if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }
+
+// The API is the gatekeeper: a token only unlocks the page if GET /admin/blocks
+// accepts it. Any probe date works; today is as good as any.
+async function verifyToken(token){
+  const today = new Date().toISOString().slice(0, 10);
+  const res = await fetch(`${API_BASE}/admin/blocks?date=${today}`, {
+    headers: { "x-admin-token": token },
+  });
+  return res.ok;
+}
+
+function showLogin(msg){
+  $("#appView").style.display = "none";
+  $("#loginView").style.display = "";
+  $("#loginStatus").textContent = msg || "";
+  $("#tokenInput").value = "";
+}
+
+function showApp(){
+  $("#loginView").style.display = "none";
+  $("#appView").style.display = "";
+}
+
+async function api(path, opts = {}){
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers: { "Content-Type": "application/json", "x-admin-token": getToken(), ...(opts.headers||{}) },
+  });
+  let body = null;
+  try { body = await res.json(); } catch {}
+  if (!res.ok) {
+    if (res.status === 401) { // token revoked/rotated mid-session — back to the wall
+      setToken("");
+      showLogin("Session no longer valid — sign in again.");
+      throw new Error("Unauthorized.");
+    }
+    throw new Error(body?.error || `HTTP ${res.status}`);
+  }
+  return body;
+}
+
+function setStatus(msg, kind){
+  const el = $("#status");
+  el.textContent = msg || "";
+  el.className = kind || "";
+}
+
+function slotRowHtml(time, count, capacity, isBlocked, reason){
+  const full = count >= capacity && !isBlocked;
+  const cls = isBlocked ? "blocked" : (full ? "full" : "");
+  const meta = isBlocked
+    ? `Blocked${reason ? " — " + escapeHtml(reason) : ""}`
+    : `${count}/${capacity} booked`;
+  const actionBtn = isBlocked
+    ? `<button class="btn btn-ghost" data-action="unblock" data-time="${escapeAttr(time)}">Unblock</button>`
+    : `<button class="btn btn-danger" data-action="block" data-time="${escapeAttr(time)}">Block</button>`;
+  return `
+    <div class="slot-row ${cls}">
+      <div class="slot-info">
+        <div class="time">${escapeHtml(time)}${full ? '<span class="tag-full">Full</span>' : ''}</div>
+        <div class="meta">${meta}</div>
+      </div>
+      ${actionBtn}
+    </div>`;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+async function loadDate(dateISO){
+  setStatus("Loading…");
+  try {
+    const data = await api(`/admin/blocks?date=${dateISO}`);
+    currentData = data;
+    $("#slotsHeading").textContent = `Slots for ${dateISO}`;
+    const blockedTimes = new Set(data.blocks.map(b => b.time));
+    const reasonByTime = Object.fromEntries(data.blocks.map(b => [b.time, b.reason]));
+    $("#slotsList").innerHTML = data.slots.map(time =>
+      slotRowHtml(time, data.booked[time] || 0, data.capacity, blockedTimes.has(time), reasonByTime[time])
+    ).join("");
+    $("#slotsPanel").style.display = "";
+    setStatus("");
+  } catch (err) {
+    setStatus(err.message, "err");
+  }
+}
+
+async function blockSlot(dateISO, time, reason){
+  await api("/admin/block", { method: "POST", body: JSON.stringify({ date: dateISO, time, reason: reason || "" }) });
+}
+async function unblockSlot(dateISO, time){
+  await api("/admin/unblock", { method: "POST", body: JSON.stringify({ date: dateISO, time }) });
+}
+
+async function attemptLogin(token){
+  if (!token) { $("#loginStatus").textContent = "Enter a token."; return; }
+  $("#loginBtn").disabled = true;
+  $("#loginStatus").textContent = "Checking…";
+  try {
+    if (await verifyToken(token)) {
+      setToken(token);
+      showApp();
+    } else {
+      setToken("");
+      showLogin("Wrong token — access denied.");
+    }
+  } catch {
+    showLogin("Could not reach the booking API — try again.");
+  } finally {
+    $("#loginBtn").disabled = false;
+  }
+}
+
+$("#loginBtn").addEventListener("click", () => attemptLogin($("#tokenInput").value.trim()));
+$("#tokenInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") attemptLogin($("#tokenInput").value.trim());
+});
+$("#signOutBtn").addEventListener("click", () => {
+  setToken("");
+  showLogin("Signed out.");
+});
+
+$("#dateInput").addEventListener("change", e => {
+  if (e.target.value) loadDate(e.target.value);
+});
+
+$("#refreshBtn").addEventListener("click", () => {
+  if ($("#dateInput").value) loadDate($("#dateInput").value);
+});
+
+$("#slotsList").addEventListener("click", async e => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const dateISO = $("#dateInput").value;
+  const time = btn.dataset.time;
+  const action = btn.dataset.action;
+  btn.disabled = true;
+  setStatus(action === "block" ? `Blocking ${time}…` : `Unblocking ${time}…`);
+  try {
+    if (action === "block") await blockSlot(dateISO, time, $("#reasonInput").value.trim());
+    else await unblockSlot(dateISO, time);
+    setStatus(action === "block" ? `Blocked ${time}.` : `Unblocked ${time}.`, "ok");
+    await loadDate(dateISO);
+  } catch (err) {
+    setStatus(err.message, "err");
+    btn.disabled = false;
+  }
+});
+
+$("#blockDayBtn").addEventListener("click", async () => {
+  const dateISO = $("#dateInput").value;
+  if (!dateISO || !currentData) return;
+  const reason = $("#reasonInput").value.trim();
+  setStatus("Blocking whole day…");
+  try {
+    for (const time of currentData.slots) await blockSlot(dateISO, time, reason);
+    setStatus(`Blocked all ${currentData.slots.length} slot(s) on ${dateISO}.`, "ok");
+    await loadDate(dateISO);
+  } catch (err) {
+    setStatus(err.message, "err");
+  }
+});
+
+$("#unblockDayBtn").addEventListener("click", async () => {
+  const dateISO = $("#dateInput").value;
+  if (!dateISO || !currentData) return;
+  setStatus("Unblocking whole day…");
+  try {
+    for (const time of currentData.slots) await unblockSlot(dateISO, time);
+    setStatus(`Unblocked all slot(s) on ${dateISO}.`, "ok");
+    await loadDate(dateISO);
+  } catch (err) {
+    setStatus(err.message, "err");
+  }
+});
+
+// Auto-login: a previously saved token unlocks the page only if it still verifies.
+(async () => {
+  const saved = getToken();
+  if (!saved) { showLogin(); return; }
+  $("#loginStatus").textContent = "Checking saved token…";
+  try {
+    if (await verifyToken(saved)) showApp();
+    else { setToken(""); showLogin("Saved token no longer valid — sign in again."); }
+  } catch {
+    showLogin("Could not reach the booking API — try again.");
+  }
+})();
+</script>
+
+</body>
+</html>
