@@ -236,6 +236,19 @@
   .disc-msg.err { color:var(--p2d); }
   .policy-note { background:#FDEEF2; border:1px solid #F4C4D2; color:#9a3b58;
     font-size:12.5px; padding:10px 14px; border-radius:12px; margin-top:14px; line-height:1.5; }
+  .agree-row { display:flex; gap:10px; align-items:flex-start; margin-top:12px; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .agree-row input { margin-top:2px; width:18px; height:18px; flex:none; }
+  .agree-link { color:var(--accent); font-weight:600; text-decoration:underline; cursor:pointer; }
+
+  /* Modal (booking-agreement popup, guest-count-clamp notice) */
+  .modal-overlay { position:fixed; inset:0; background:rgba(58,53,80,.45); display:none; align-items:center; justify-content:center; padding:20px; z-index:100; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:var(--card); border-radius:18px; max-width:520px; width:100%; max-height:82vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(43,40,54,.28); position:relative; }
+  .modal-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:50%; background:var(--line); color:var(--muted); font-size:16px; cursor:pointer; line-height:1; }
+  .modal-close:hover { background:#DCD4F2; color:var(--ink); }
+  .modal-body { padding:26px 26px 24px; overflow-y:auto; font-size:12.5px; line-height:1.55; color:var(--muted); }
+  .modal-body h4 { margin:0 0 10px; font-size:17px; color:var(--ink); }
+  .modal-body b { color:var(--ink); }
 
   /* Review */
   .review-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin-bottom:8px; }
@@ -300,11 +313,18 @@
       <a href="tel:+15162439397">(516) 243-9397</a></p></div>
   </footer>
 
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
 <script>
 /* ---------------- Data ---------------- */
 const PACKAGES = [
   {
-    id:1, name:"PACKAGE 1", title:"⭐ Classic ⭐", base:599, orig:null, perKid:35, includedKids:10,
+    id:1, name:"PACKAGE 1", title:"⭐ Classic ⭐", base:599, orig:null, perKid:35, includedKids:10, maxKids:15,
     cssvar:"var(--p1)", badge:null,
     features:[
       "10 kids","10 Adults","1 Hr 45 Min Private Party Room & Playground Access",
@@ -314,36 +334,36 @@ const PACKAGES = [
     ]
   },
   {
-    id:2, name:"PACKAGE 2", title:"💖 Premium 💖", base:899, orig:null, perKid:35, includedKids:10,
+    id:2, name:"PACKAGE 2", title:"💖 Premium 💖", base:899, orig:null, perKid:35, includedKids:10, maxKids:25,
     cssvar:"var(--p2)", badge:null,
     features:[
       "10 kids","10 Adults","1 Hr 45 Min Private Party Room & Playground Access",
       "2 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid",
       "Age Number Balloon","Classic Tableware","Setup & Cleanup",
-      "Fruit Pouch for Each Kid","2 of 2L Lemonade or 2L Soda","Bottle Water","Balloon Garland (6ft)",
+      "Fruit Pouch for Each Kid","2 of 2L Lemonade or 2L Soda","FIJI Water for Each Adult","Balloon Garland (6ft)",
       "Backdrop (Happy Birthday)","Party Welcome Sign"
     ]
   },
   {
-    id:3, name:"PACKAGE 3", title:"🌟 Luxury 🌟", base:1399, orig:1793, perKid:35, includedKids:12,
+    id:3, name:"PACKAGE 3", title:"🌟 Luxury 🌟", base:1399, orig:1793, perKid:35, includedKids:12, maxKids:25,
     cssvar:"var(--p3)", badge:"BEST VALUE",
     features:[
       "12 kids","12 Adults","1 Hr 45 Min Private Party Room & Unlimited Playground Access",
       "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
-      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","Bottle Water",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","FIJI Water for Each Adult",
       "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
-      "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid"
+      "Dessert Table (12 Snacks & 12 Cupcakes from Nothing Bundt Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid"
     ]
   },
   {
-    id:4, name:"PACKAGE 4", title:"👑 VIP 👑", base:1799, orig:1999, perKid:35, includedKids:12,
+    id:4, name:"PACKAGE 4", title:"👑 VIP 👑", base:1799, orig:1999, perKid:35, includedKids:12, maxKids:25,
     cssvar:"var(--p4)", badge:"VIP EXPERIENCE",
     features:[
       "12 kids","12 Adults","1 Hr 45 Min Private Party Room & Unlimited Playground Access",
       "3 Pizzas","Gold Fish for Each Kid","Juice Box for Each Kid","Age Number Balloon",
-      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","Bottle Water",
+      "Themed Tableware","Setup & Cleanup","Fruit Pouch for Each Kid","3 of 2L Lemonade or 2L Soda","FIJI Water for Each Adult",
       "Themed Balloon Arch (12ft) — balloon colors coordinated with your selected theme","Backdrop (Party Theme Options)","Party Welcome Sign",
-      "Dessert Table (Snack & Cup Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid",
+      "Dessert Table (12 Snacks & 12 Cupcakes from Nothing Bundt Cakes)","Balloon Stick for Each Kid","One Themed Character Balloon","Pinata","Return Pass for Each Kid",
       "Balloon Cake","Balloon Flower","Balloon Fireworks",
       "Special Gift for Birthday Kid","Photography Assistance"
     ]
@@ -359,6 +379,51 @@ const THEMES = [
   {e:"🦄",n:"Unicorn Dreams"},{e:"🍄",n:"Mario"},{e:"🐾",n:"Paw Patrol"},{e:"🐷",n:"Peppa Pig"},
   {e:"🏎️",n:"Cars"},{e:"🐶",n:"Bluey"},{e:"🦕",n:"Dino Discovery"},{e:"🌊",n:"Under the Sea"}
 ];
+
+// Full booking agreement shown (scrollable) before payment — required checkbox gates the pay button.
+const AGREEMENT_HTML = `
+  <h4 style="margin:0 0 8px">Waddle Waddle Birthday Party Booking Agreement</h4>
+  <p>This Birthday Party ("and/or event") Agreement ("Agreement") is between Waddle Waddle and the undersigned party renter (the "Client"). Please carefully review the following policies before completing your payment. By clicking "I Agree &amp; Pay," you acknowledge that you have read, understand, and agree to all of the terms and conditions below.</p>
+  <ol style="padding-left:18px;margin:10px 0">
+    <li><b>Guest Count, Food Selection, and Theme Selection Changes.</b> The final guest count and food selections may be changed any time up to 2 days before the scheduled party date. The required party theme selection may be changed any time up to 7 days before the scheduled party date.
+      <ol type="a" style="padding-left:18px;margin:6px 0">
+        <li>Guest count changes and food selection changes must be submitted no later than 2 days before the scheduled party date.</li>
+        <li>The party package requires a theme selection, and the selected theme cannot be changed after 7 days prior to the party date.</li>
+        <li>The standard party minimum headcount cannot be decreased, and no refund or credit will be issued if the minimum headcount is not met.</li>
+        <li>After the applicable deadline, the guest count, food selections, and theme selection cannot be changed.</li>
+        <li>If a confirmed guest does not attend the party, the charge for that guest is non-refundable.</li>
+        <li>Additional guests who attend beyond the confirmed guest count will be subject to additional charges and may only be accommodated if space and venue capacity allow.</li>
+      </ol>
+    </li>
+    <li><b>Cancellation &amp; Refund Policy.</b> The following cancellation and refund terms apply to all party bookings:
+      <ol type="a" style="padding-left:18px;margin:6px 0">
+        <li>14 or more days before the scheduled party date: The booking may be canceled for a refund, less a $15 non-refundable processing fee.</li>
+        <li>Less than 14 days before the scheduled party date: The booking is non-refundable, and any deposit paid will be forfeited.</li>
+        <li>After the applicable change deadlines: No refunds or credits will be issued for guest-count reductions, food changes, theme changes, minimum headcount shortfalls, or guests who do not attend.</li>
+      </ol>
+    </li>
+    <li><b>Outside Decorations.</b> Outside decorations are not permitted. Guests may not bring outside decorations, décor, or decorating materials into the venue unless specifically approved in advance by Waddle Waddle.</li>
+    <li><b>Party Time &amp; Overtime.</b> The party must end at the scheduled end time. All guests must exit the party area by the scheduled end time.<br>If the party or guests remain beyond the scheduled party time, an overtime fee of $50 for every 10 minutes, or portion thereof, will be charged.</li>
+    <li><b>Waiver &amp; Socks Requirement.</b> All guests, including children and adults, must complete and sign the required waiver before participating in or entering designated play areas.<br>Socks are required for everyone in designated play areas. Guests must wear socks at all times. Shoes are not permitted in designated play areas.</li>
+    <li><b>Food &amp; Beverages.</b> All food and drinks must remain in the party room only.</li>
+    <li><b>Lost or Damaged Personal Property.</b> Under no circumstances will Waddle Waddle take responsibility for any lost, missing, damaged, or stolen client or guest property before, during, or after the event. It is the sole responsibility of each person entering the facility to safeguard all belongings.</li>
+    <li><b>Conduct &amp; Safety.</b>
+      <ol type="a" style="padding-left:18px;margin:6px 0">
+        <li>All people attending the event, including but not limited to parents, guardians, and children, are fully responsible for their own wellbeing and behavior, as well as the supervision of any minors under their care, while on the premises of Waddle Waddle. Any child or adult not following Waddle Waddle's rules and found to be destructive and/or abusive to the facility will be asked to leave the premises. No refunds will be given.</li>
+        <li>All party renters and their guests must comply with all of the policies and procedures of Waddle Waddle, as set forth in "Waddle Waddle Safe General Rules and Policies" and posted in the facility. The policies, procedures, and agreement may be amended at Waddle Waddle's sole discretion.</li>
+        <li>Children must be supervised by an adult at all times while in the facility. All people attending the event must fill out and sign Waddle Waddle's waiver. The Client may send the waiver link to be completed and signed prior to the event; otherwise, the waiver must be completed and signed upon arrival and before entering the event space.</li>
+      </ol>
+    </li>
+    <li><b>Damage and Cleaning.</b>
+      <ol type="a" style="padding-left:18px;margin:6px 0">
+        <li>Any damage done to Waddle Waddle's facility or property shall be charged to the Client as an additional charge.</li>
+        <li>Any excessive mess (for example, guests eating in the play area) caused by children or adults resulting in extra cleaning shall be charged an additional cleaning fee.</li>
+      </ol>
+    </li>
+    <li><b>Agreement to Policies.</b> By clicking "I Agree &amp; Pay," I confirm that I have read, understand, and agree to Waddle Waddle's Birthday Party Booking, Guest Count, Cancellation, Refund, Decoration, Overtime, Waiver, Socks, Theme Selection, Food &amp; Beverage, Personal Property, Conduct &amp; Safety, and Damage &amp; Cleaning Policies.</li>
+  </ol>
+  <p style="margin-top:10px">I have carefully read the foregoing terms and by my signature agree to be bound by the terms of this Agreement. Modifications or additions to the pre-printed terms of this Agreement, other than the completion of existing blanks, are unauthorized and invalid and will not be honored by Waddle Waddle.</p>
+`;
 
 // Add-on extras (from the EXTRA OPTIONS menu) — chosen by quantity on step 3.
 const OPTIONS = [
@@ -380,6 +445,11 @@ const OPTIONS = [
     { id:"themed_cake", n:"Themed Birthday Cake", p:200 },
     { id:"sparkling_water", n:"Sparkling Water", p:3 },
     { id:"bottled_water", n:"Bottled Water", p:3 },
+  ]},
+  { cat:"🥪 Sandwiches", items:[
+    { id:"chicken_parm_hero", n:"Chicken Cutlet Parmigiana Hero (1 foot)", p:15 },
+    { id:"eggplant_parm_hero", n:"Eggplant Parmigiana Hero (1 foot)", p:15 },
+    { id:"ham_provolone_hero", n:"Ham & Provolone Hero (1 foot)", p:15 },
   ]},
   { cat:"🎟️ Other Options", items:[
     { id:"extra_adult", n:"One Additional Adult", p:10 },
@@ -409,18 +479,22 @@ let availability = {};  // dateISO -> { [slot]: bookedCount } cache from /availa
 /* ---------------- State ---------------- */
 const state = { step:1, dateISO:null, time:null, kids:10, pkgId:null, theme:null, options:{},
   childName:"", childAge:"", childGender:"", allergies:"", notes:"", discountCode:null, discountError:"",
-  name:"", phone:"", email:"", bookingId:null, payCancelled:false, slotFull:false };
+  name:"", phone:"", email:"", bookingId:null, payCancelled:false, slotFull:false,
+  agreedToPolicies:false, agreedAt:null };
 const STEPS = ["Date & Time","Package","Theme & Extras","Deposit"];
 let prevStep = 1;        // tracks step changes for scroll behavior
 let scrollNext = null;   // selector to reveal after a within-step selection
 
 /* ---------------- Helpers ---------------- */
 const $ = sel => document.querySelector(sel);
+function openModal(html){ $("#modalBody").innerHTML = html; $("#modalOverlay").classList.add("open"); }
+function closeModal(){ $("#modalOverlay").classList.remove("open"); }
 const fmt = n => "$" + Number(n).toLocaleString("en-US");
 const money = n => "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const round2 = n => Math.round(n * 100) / 100; // mirror pricing.mjs so display matches the server to the cent
 const pkgById = id => PACKAGES.find(p => p.id === id);
 const includedKids = () => state.pkgId ? pkgById(state.pkgId).includedKids : MIN_KIDS; // base guests for the chosen package
+const maxKidsFor = () => state.pkgId ? (pkgById(state.pkgId).maxKids ?? MAX_KIDS) : MAX_KIDS;
 function optionsTotal(){
   return Object.entries(state.options).reduce((s,[id,q])=> s + (OPTION_BY_ID[id]?.p||0)*Number(q||0), 0);
 }
@@ -460,7 +534,7 @@ function childValid(){
   const age = Number(state.childAge);
   return state.childName.trim().length > 0 && Number.isInteger(age) && age >= 1 && age <= 17;
 }
-function reserveValid(){ return contactValid() && childValid(); }
+function reserveValid(){ return contactValid() && childValid() && state.agreedToPolicies === true; }
 function isWeekend(iso){ const d = new Date(iso + "T12:00:00"); const g = d.getDay(); return g === 0 || g === 6; }
 function slotsFor(iso){ return isWeekend(iso) ? WEEKEND_SLOTS : WEEKDAY_SLOTS; }
 function prettyDate(iso){
@@ -582,16 +656,17 @@ function step1(){
     <div class="stepper">
       <button id="kMinus" ${state.kids<=includedKids()?"disabled":""}>−</button>
       <span class="count" id="kCount">${state.kids}</span>
-      <button id="kPlus" ${state.kids>=MAX_KIDS?"disabled":""}>+</button>
+      <button id="kPlus" ${state.kids>=maxKidsFor()?"disabled":""}>+</button>
     </div>
-    <div class="kid-note">${includedKids()} kids + ${includedKids()} adults included${state.pkgId?"":" (10 for Packages 1–2, 12 for Packages 3–4)"} · max ${MAX_KIDS} kids.
+    <div class="kid-note">${includedKids()} kids + ${includedKids()} adults included${state.pkgId?"":" (10 for Packages 1–2, 12 for Packages 3–4)"} · max ${maxKidsFor()} kids${state.pkgId===1?" (Package 1 Classic)":""}.
       ${state.kids>includedKids() ? `<br><b>${state.kids-includedKids()} extra kid${state.kids-includedKids()>1?"s":""}</b> — +$35 each (includes 1 adult per child).` : ""}</div>
   `;
 }
 
 function step2(){
   const cards = PACKAGES.map(pkg=>{
-    const breakdown = `${pkg.includedKids} kids + ${pkg.includedKids} adults · +${fmt(pkg.perKid)} per extra kid`;
+    const cap = pkg.maxKids ?? MAX_KIDS;
+    const breakdown = `${pkg.includedKids} kids + ${pkg.includedKids} adults · +${fmt(pkg.perKid)} per extra kid${cap<MAX_KIDS?` · up to ${cap} kids max`:""}`;
     const orig = pkg.orig ? `<div class="orig">Original ${fmt(pkg.orig)}</div>` : `<div class="orig" style="visibility:hidden">.</div>`;
     return `
       <div class="pkg ${state.pkgId===pkg.id?"sel":""}" style="--pc:${pkg.cssvar}" data-pkg="${pkg.id}" tabindex="0" role="button" aria-pressed="${state.pkgId===pkg.id}">
@@ -718,7 +793,11 @@ function step4(){
       <div class="sum-row"><span class="k">Remaining at venue<small>${money(t.subtotal - DEPOSIT)} + ${money(t.remainingTax)} tax</small></span><span class="v">${money(t.balance)}</span></div>
     </div>
     <p class="small-note">You'll be taken to a secure Stripe checkout to pay the ${money(DEPOSIT_DUE)} deposit (${money(DEPOSIT)} + ${money(DEPOSIT_TAX)} tax) by card. Your date is locked in the moment payment completes.</p>
-    <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${money(DEPOSIT_DUE)} deposit is paid</b>.<br>⚠️ ${money(DEPOSIT_DUE)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>`;
+    <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${money(DEPOSIT_DUE)} deposit is paid</b>.<br>⚠️ ${money(DEPOSIT_DUE)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>
+    <div class="field-label" style="margin-top:20px">📜 Booking agreement</div>
+    <div class="kid-note">Please review our <a href="#" id="agreementLink" class="agree-link">Booking Agreement</a> before paying — it covers cancellations, guest-count changes, and venue policies.</div>
+    <label class="agree-row"><input type="checkbox" id="agreeChk" ${state.agreedToPolicies?"checked":""}>
+      <span>I have read, understand, and agree to all of the policies stated above.</span></label>`;
 }
 
 function step5(){
@@ -853,7 +932,7 @@ function ctaConfig(){
       const ok = reserveValid();
       // Re-check at click time: the inputs update without a re-render,
       // so the captured `ok` goes stale once the user fills the form.
-      return { label:`Pay ${money(DEPOSIT_DUE)} deposit`, disabled:!ok, action:()=>{ if(reserveValid()) payDeposit(); } };
+      return { label:`I Agree & Pay ${money(DEPOSIT_DUE)} deposit`, disabled:!ok, action:()=>{ if(reserveValid()) payDeposit(); } };
     }
     default:
       return { label:"Start a new booking", disabled:false, action:resetBooking };
@@ -865,6 +944,7 @@ function resetBooking(){
   state.childName=""; state.childAge=""; state.childGender=""; state.allergies=""; state.notes="";
   state.discountCode=null; state.discountError="";
   state.name=""; state.phone=""; state.email=""; state.bookingId=null; state.payCancelled=false;
+  state.agreedToPolicies=false; state.agreedAt=null;
   render();
 }
 
@@ -887,7 +967,8 @@ async function payDeposit(){
         childName: state.childName.trim(), childAge: Number(state.childAge)||null,
         childGender: state.childGender, allergies: state.allergies.trim(),
         notes: state.notes.trim(), discountCode: state.discountCode,
-        name: state.name.trim(), phone: state.phone.trim(), email: state.email.trim()
+        name: state.name.trim(), phone: state.phone.trim(), email: state.email.trim(),
+        agreedToPolicies: state.agreedToPolicies === true, agreedAt: state.agreedAt
       })
     });
     if (res.status === 409){
@@ -897,6 +978,12 @@ async function payDeposit(){
       submitting = false; render();
       return;
     }
+    if (res.status === 400){
+      if (btn){ btn.disabled = false; btn.textContent = `I Agree & Pay ${money(DEPOSIT_DUE)} deposit`; }
+      alert("Your booking page may be out of date. Please refresh the page and try again.");
+      submitting = false;
+      return;
+    }
     if (!res.ok) throw new Error("request " + res.status);
     const data = await res.json();
     if (!data.url) throw new Error("no checkout url");
@@ -904,7 +991,7 @@ async function payDeposit(){
     try { sessionStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch {}
     window.location.href = data.url; // hand off to Stripe
   } catch (err){
-    if (btn){ btn.disabled = false; btn.textContent = `Pay ${money(DEPOSIT_DUE)} deposit`; }
+    if (btn){ btn.disabled = false; btn.textContent = `I Agree & Pay ${money(DEPOSIT_DUE)} deposit`; }
     alert("Sorry — we couldn't start checkout. Please try again, or call us at (516) 243-9397.");
     submitting = false;
   }
@@ -938,11 +1025,24 @@ function wirePanel(){
     // Landing on step 1 with a date already chosen (e.g. returning from Stripe): load its slots.
     if (state.dateISO && !(state.dateISO in availability)) fetchAvailability(state.dateISO);
     if ($("#kMinus")) $("#kMinus").onclick = ()=>{ if(state.kids>includedKids()){state.kids--; render();} };
-    if ($("#kPlus")) $("#kPlus").onclick = ()=>{ if(state.kids<MAX_KIDS){state.kids++; render();} };
+    if ($("#kPlus")) $("#kPlus").onclick = ()=>{ if(state.kids<maxKidsFor()){state.kids++; render();} };
   }
   if (state.step===2){
     document.querySelectorAll(".pkg").forEach(c=>{
-      const choose = ()=>{ state.pkgId = +c.dataset.pkg; if (state.pkgId <= 2) state.theme = null; state.kids = Math.max(state.kids, pkgById(state.pkgId).includedKids); scrollNext = "#summary"; render(); };
+      const choose = ()=>{
+        state.pkgId = +c.dataset.pkg;
+        if (state.pkgId <= 2) state.theme = null;
+        const pkg = pkgById(state.pkgId);
+        state.kids = Math.max(state.kids, pkg.includedKids);
+        const cap = pkg.maxKids ?? MAX_KIDS;
+        const wasClamped = state.kids > cap;
+        if (wasClamped) state.kids = cap;
+        scrollNext = "#summary"; render();
+        if (wasClamped){
+          const title = pkg.title.replace(/[⭐💖🌟👑]/g,"").trim();
+          openModal(`<h4>⚠️ Guest count adjusted</h4><p><b>${title}</b> hosts up to ${cap} kids &amp; ${cap} adults — we've adjusted your guest count to ${cap}. Pick a different package for larger parties.</p>`);
+        }
+      };
       c.onclick = choose;
       c.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); choose(); } };
     });
@@ -979,6 +1079,14 @@ function wirePanel(){
     bind("#cName","childName"); bind("#cAge","childAge"); bind("#cAllergy","allergies"); bind("#cNotes","notes");
     bind("#fName","name"); bind("#fPhone","phone"); bind("#fEmail","email");
     const g = $("#cGender"); if (g) g.onchange = e=>{ state.childGender = e.target.value; upd(); };
+    const agreementLink = $("#agreementLink");
+    if (agreementLink) agreementLink.onclick = e=>{ e.preventDefault(); openModal(AGREEMENT_HTML); };
+    const agree = $("#agreeChk");
+    if (agree) agree.onchange = e=>{
+      state.agreedToPolicies = e.target.checked;
+      if (e.target.checked && !state.agreedAt) state.agreedAt = new Date().toISOString();
+      upd();
+    };
     const apply = $("#discApply");
     if (apply) apply.onclick = ()=>{
       if (state.discountCode){ state.discountCode=null; state.discountError=""; render(); return; } // button reads "Remove"
@@ -1037,6 +1145,10 @@ function render(){
   }
   history.replaceState(null, "", location.pathname); // strip ?status=… so refresh is clean
 })();
+
+$("#modalCloseBtn").onclick = closeModal;
+$("#modalOverlay").onclick = e=>{ if (e.target.id === "modalOverlay") closeModal(); };
+document.addEventListener("keydown", e=>{ if (e.key === "Escape") closeModal(); });
 
 render();
 </script>
