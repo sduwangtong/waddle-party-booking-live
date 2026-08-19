@@ -533,7 +533,9 @@ function childValid(){
   const age = Number(state.childAge);
   return state.childName.trim().length > 0 && Number.isInteger(age) && age >= 1 && age <= 17;
 }
-function reserveValid(){ return contactValid() && childValid() && state.agreedToPolicies === true; }
+// Packages 3/4 offer a theme picker and require a pick; 1/2 never show one.
+function themeValid(){ return state.pkgId <= 2 || !!state.theme; }
+function reserveValid(){ return contactValid() && childValid() && state.agreedToPolicies === true && themeValid(); }
 function isWeekend(iso){ const d = new Date(iso + "T12:00:00"); const g = d.getDay(); return g === 0 || g === 6; }
 function slotsFor(iso){ return isWeekend(iso) ? WEEKEND_SLOTS : WEEKDAY_SLOTS; }
 function prettyDate(iso){
@@ -737,6 +739,7 @@ function step4(){
   const pkg = t.pkg;
   const sel = selectedOptions();
   const payCancelled = state.payCancelled; state.payCancelled = false; // one-shot notice
+  const themeMissing = pkg.id >= 3 && !state.theme;
   return `
     <h2>Review & deposit</h2>
     <p class="sub">Confirm the details, then pay the ${money(DEPOSIT_DUE)} deposit (incl. tax) to lock in your date.</p>
@@ -747,8 +750,9 @@ function step4(){
       <div class="rev"><div class="k">Guests</div><div class="v">${state.kids} kids + ${t.adults} adults</div></div>
       <div class="rev"><div class="k">Package</div><div class="v">${pkg.title.replace(/[⭐💖🌟👑]/g,"").trim()}</div></div>
       <div class="rev" style="grid-column:1/-1"><div class="k">Theme</div>
-        <div class="v">${state.theme || "—"}</div></div>
+        <div class="v">${themeMissing?`<span style="color:#9a3b58;font-weight:600">Not selected</span>`:(state.theme || "—")}</div></div>
     </div>
+    ${themeMissing?`<div class="policy-note" style="background:#FDEEF2;border-color:#F4C4D2;color:#9a3b58">🎨 This package requires a party theme — click <b>"Theme & Extras"</b> above to pick one before paying.</div>`:""}
     <div class="field-label" style="margin-top:20px">🎂 Birthday star</div>
     <input class="tin" id="cName" type="text" placeholder="Birthday child's name" value="${state.childName}" />
     <div class="duo">
