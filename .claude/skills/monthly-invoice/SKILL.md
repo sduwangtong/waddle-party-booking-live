@@ -67,5 +67,5 @@ the local PDF is always the source of truth.
 
 ## Requirements
 - AWS CLI authenticated for account `642662060437` (read-only CloudWatch + DynamoDB).
-- Google Chrome (used headless for `--print-to-pdf`).
+- Google Chrome or Chromium (used headless for `--print-to-pdf`). Resolved automatically: macOS app bundle, then `google-chrome` / `chromium` / `chromium-browser` on PATH. On Linux, `sudo apt install chromium` if none present.
 - Optional: `~/bin/rclone` with remote `gdrive` configured (for the Drive mirror).
