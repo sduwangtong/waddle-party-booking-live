@@ -58,6 +58,14 @@ Notes baked into the logic:
 
 This repo is published to **GitHub Pages (public)**. Generated invoices contain client info, so the script writes them **outside the repo** (`~/Documents/simbino-invoices`) by default. Never move an invoice PDF/HTML into the repo tree.
 
+## Google Drive mirror
+
+After the PDF is written, the script uploads it to **Drive → `Waddle Waddle Invoices/`** via the
+rclone remote `gdrive` (`~/bin/rclone`, same transport as the rednote-insight pipeline). Best-effort
+and idempotent (rclone skips unchanged files): a missing rclone or a failed upload only warns —
+the local PDF is always the source of truth.
+
 ## Requirements
 - AWS CLI authenticated for account `642662060437` (read-only CloudWatch + DynamoDB).
 - Google Chrome (used headless for `--print-to-pdf`).
+- Optional: `~/bin/rclone` with remote `gdrive` configured (for the Drive mirror).

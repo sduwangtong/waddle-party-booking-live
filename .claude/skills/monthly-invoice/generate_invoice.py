@@ -58,6 +58,14 @@ ZELLE_QR_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
+# Google Drive mirror (rclone remote "gdrive", same transport as the
+# rednote-insight pipeline). Best-effort: a missing rclone/remote or a failed
+# upload warns but never fails the invoice run.
+RCLONE = os.path.expanduser("~/bin/rclone")
+DRIVE_FOLDER = "Waddle Waddle Invoices"
+RCLONE_FLAGS = ["--timeout", "60s", "--contimeout", "15s", "--transfers", "2",
+                "--low-level-retries", "10", "--retries", "2"]
+
 
 def aws_text(*args):
     r = subprocess.run(["aws", *args, "--region", REGION, "--output", "text"],
@@ -348,6 +356,24 @@ def main():
         sys.exit("Chrome failed to produce %s" % pdf_path)
     print("\nWrote: %s" % pdf_path, file=sys.stderr)
     print(pdf_path)
+    upload_to_drive(pdf_path)
+
+
+def upload_to_drive(pdf_path):
+    if not os.path.exists(RCLONE):
+        print("[gdrive] rclone not installed (~/bin/rclone) — skipping Drive upload",
+              file=sys.stderr)
+        return
+    r = subprocess.run([RCLONE, "copy", os.path.dirname(pdf_path),
+                        "gdrive:" + DRIVE_FOLDER,
+                        "--include", os.path.basename(pdf_path), *RCLONE_FLAGS],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        print("[gdrive] upload failed: %s" % (r.stderr or "").strip()[-300:],
+              file=sys.stderr)
+    else:
+        print("[gdrive] %s -> Drive/%s ✓" % (os.path.basename(pdf_path), DRIVE_FOLDER),
+              file=sys.stderr)
 
 
 if __name__ == "__main__":
