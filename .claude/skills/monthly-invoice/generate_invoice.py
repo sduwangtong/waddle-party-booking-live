@@ -20,6 +20,7 @@ import datetime
 import html
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -56,7 +57,24 @@ ZELLE_TOKEN = "simbinoart@gmail.com"
 ZELLE_QR_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "simbino-zelle-qr.png")
 
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+# Chrome/Chromium candidates, tried in order (macOS app bundle, then Linux names).
+CHROME_CANDIDATES = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "google-chrome",
+    "chromium",
+    "chromium-browser",
+    "/usr/bin/google-chrome",
+]
+
+
+def find_chrome():
+    for cand in CHROME_CANDIDATES:
+        path = cand if os.path.sep in cand else shutil.which(cand)
+        if path and os.path.exists(path):
+            return path
+    sys.exit("No Chrome/Chromium binary found (needed for --print-to-pdf). Tried: "
+             + ", ".join(CHROME_CANDIDATES)
+             + ". Install one, e.g.: sudo apt install chromium")
 
 # Google Drive mirror (rclone remote "gdrive", same transport as the
 # rednote-insight pipeline). Best-effort: a missing rclone/remote or a failed
@@ -344,9 +362,10 @@ def main():
         f.write(html_doc)
     # Fresh profile dir + hard timeout: Chrome headless can hang after writing the
     # PDF when the user's main Chrome is running (observed 2026-08-22).
+    chrome = find_chrome()
     profile = tempfile.mkdtemp(prefix="invoice-chrome-")
     try:
-        subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
                         "--user-data-dir=" + profile,
                         "--print-to-pdf=" + pdf_path, "file://" + html_path],
                        capture_output=True, timeout=120)
