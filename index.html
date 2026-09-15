@@ -370,7 +370,11 @@ const PACKAGES = [
   }
 ];
 
-const WEEKEND_SLOTS = ["10:00 AM – 12:00 PM","12:30 – 2:30 PM","3:00 – 5:00 PM","5:30 – 7:30 PM"];
+// Weekends drop from 4 party slots to 3 on GRID_SWITCH. Dates before it were
+// already densely booked under the 4-slot grid and keep it (mirrors slots.mjs).
+const GRID_SWITCH = "2026-11-01";
+const WEEKEND_SLOTS = ["10:30 AM – 12:30 PM","1:30 – 3:30 PM","4:30 – 6:30 PM"];
+const WEEKEND_SLOTS_PRE_SWITCH = ["10:00 AM – 12:00 PM","12:30 – 2:30 PM","3:00 – 5:00 PM","5:30 – 7:30 PM"];
 const WEEKDAY_SLOTS = ["5:30 – 7:30 PM"];
 
 // Party themes — emoji + text (no images needed).
@@ -537,7 +541,10 @@ function childValid(){
 function themeValid(){ return state.pkgId <= 2 || !!state.theme; }
 function reserveValid(){ return contactValid() && childValid() && state.agreedToPolicies === true && themeValid(); }
 function isWeekend(iso){ const d = new Date(iso + "T12:00:00"); const g = d.getDay(); return g === 0 || g === 6; }
-function slotsFor(iso){ return isWeekend(iso) ? WEEKEND_SLOTS : WEEKDAY_SLOTS; }
+function slotsFor(iso){
+  if (!isWeekend(iso)) return WEEKDAY_SLOTS;
+  return iso < GRID_SWITCH ? WEEKEND_SLOTS_PRE_SWITCH : WEEKEND_SLOTS;
+}
 function prettyDate(iso){
   const d = new Date(iso + "T12:00:00");
   return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
