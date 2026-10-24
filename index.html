@@ -805,6 +805,15 @@ function step4(){
       <div class="sum-row deposit-line"><span class="k">Paid now (card)<small>${money(DEPOSIT)} deposit + ${money(t.depositTax)} tax</small></span><span class="v">${money(t.depositDue)}</span></div>
       <div class="sum-row"><span class="k">Remaining at venue<small>${money(t.subtotal - DEPOSIT)} + ${money(t.remainingTax)} tax</small></span><span class="v">${money(t.balance)}</span></div>
     </div>
+    <div class="pkg-notes" style="margin-top:16px">
+      <div class="pn-title">🎉 Good to know</div>
+      <div class="pn-row"><b>Dedicated Party Helper Included</b></div>
+      <div class="pn-row"><span>A dedicated party helper will be assigned to assist with your birthday celebration and help ensure a smooth and enjoyable party experience.</span></div>
+      <div class="pn-row" style="margin-top:6px"><b>10% Service Fee Applies to All Party Packages</b></div>
+      <div class="pn-row"><span>A 10% service fee will be added to all party packages to support party assistance and event services. This fee is calculated based on the base package price only and does not apply to optional add-ons.</span></div>
+      <div class="pn-row" style="margin-top:6px"><b>Gratuity</b></div>
+      <div class="pn-row"><span>Gratuity is not included. Additional tips are always appreciated but entirely optional.</span></div>
+    </div>
     <p class="small-note">You'll be taken to a secure Stripe checkout to pay the ${money(DEPOSIT_DUE)} deposit (${money(DEPOSIT)} + ${money(DEPOSIT_TAX)} tax) by card. Your date is locked in the moment payment completes.</p>
     <div class="policy-note">🔒 Your slot is held for 30 minutes while you complete payment, and <b>locked in the moment the ${money(DEPOSIT_DUE)} deposit is paid</b>.<br>⚠️ ${money(DEPOSIT_DUE)} deposit refundable only if cancelled ${LEAD_DAYS}+ days before the party.</div>
     <div class="field-label" style="margin-top:20px">📜 Booking agreement</div>
